@@ -23,7 +23,7 @@ public abstract class AbstractStateReceiver extends AbstractReceiver implements 
 
     public AbstractStateReceiver(Map<String, Object> map) {
         super(map);
-        ReceiverState state = ReceiverState.getByName((String) map.get("receiverstate"));
+        QuantumState state = QuantumState.getByName((String) map.get("receiverstate"));
         if (state != null) {
             setState(state);
         }
@@ -37,17 +37,12 @@ public abstract class AbstractStateReceiver extends AbstractReceiver implements 
     }
 
     @Override
-    public ReceiverState getState() {
+    public QuantumState getState() {
         return api.getState(location.getBlock());
     }
 
     @Override
-    public void setState(ReceiverState state) {
+    public void setState(QuantumState state) {
         api.setState(location.getBlock(), state);
-    }
-
-    @Override
-    public int getBlockCurrent() {
-        return getState().ordinal();
     }
 }

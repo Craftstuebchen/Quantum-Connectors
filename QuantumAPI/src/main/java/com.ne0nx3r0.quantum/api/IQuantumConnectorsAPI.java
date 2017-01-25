@@ -2,7 +2,7 @@ package com.ne0nx3r0.quantum.api;
 
 import com.ne0nx3r0.quantum.api.circuit.AbstractCircuit;
 import com.ne0nx3r0.quantum.api.receiver.AbstractReceiver;
-import com.ne0nx3r0.quantum.api.receiver.ReceiverState;
+import com.ne0nx3r0.quantum.api.receiver.QuantumState;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -17,13 +17,13 @@ public interface IQuantumConnectorsAPI {
 
     void setStatic(World world, boolean isStatic);
 
-    void setState(Block block, ReceiverState receiverState);
+    void setState(Block block, QuantumState receiverState);
 
-    ReceiverState getState(Block block);
+    QuantumState getState(Block block);
 
     boolean circuitExists(Location location);
 
-    void activateCircuit(Location location, int oldCurrent, int newCurrent, int chain);
+    void activateCircuit(Location location, QuantumState oldState, QuantumState newState, int chain);
 
     int getMaxChainLinks();
 }

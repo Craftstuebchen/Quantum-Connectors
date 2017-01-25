@@ -42,8 +42,8 @@ public abstract class AbstractReceiver implements Receiver, IValidMaterials {
     }
 
     @Override
-    public int getBlockCurrent() {
-        return location.getBlock().getBlockPower();
+    public QuantumState getState() {
+        return QuantumState.values()[location.getBlock().getBlockPower()];
     }
 
     @Override

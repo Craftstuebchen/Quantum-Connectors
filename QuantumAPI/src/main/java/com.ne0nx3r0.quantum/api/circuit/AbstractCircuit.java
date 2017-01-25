@@ -5,8 +5,9 @@ import com.ne0nx3r0.quantum.api.IRegistry;
 import com.ne0nx3r0.quantum.api.QuantumConnectorsAPI;
 import com.ne0nx3r0.quantum.api.receiver.AbstractKeepAliveReceiver;
 import com.ne0nx3r0.quantum.api.receiver.AbstractReceiver;
-import com.ne0nx3r0.quantum.api.receiver.CompatReceiver;
+import com.ne0nx3r0.quantum.api.receiver.QuantumState;
 import com.ne0nx3r0.quantum.api.receiver.Receiver;
+import com.ne0nx3r0.quantum.api.util.QuantumCompat;
 import com.ne0nx3r0.quantum.api.util.ValidMaterials;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -27,7 +28,7 @@ public abstract class AbstractCircuit implements Circuit {
 
     protected final IQuantumConnectorsAPI api = QuantumConnectorsAPI.getAPI();
 
-    protected List<CompatReceiver> invalidReceivers = new ArrayList<>();
+    protected List<QuantumCompat> invalidReceivers = new ArrayList<>();
     protected Map<Location, AbstractReceiver> receivers = new HashMap<>();
     protected UUID playerUUID;
     protected Location location;
@@ -62,7 +63,7 @@ public abstract class AbstractCircuit implements Circuit {
                 Constructor<? extends AbstractReceiver> receiverConstructor = receiverIRegistry.getInstance(type);
                 if (receiverConstructor == null) {
 
-                    CompatReceiver receiver = new CompatReceiver((HashMap<String, Object>) receiverMap);
+                    QuantumCompat receiver = new QuantumCompat((HashMap<String, Object>) receiverMap);
                     invalidReceivers.add(receiver);
 
                     System.out.println("There is no receiver registered with this type: " + type);
@@ -106,11 +107,11 @@ public abstract class AbstractCircuit implements Circuit {
     }
 
 
-    public void addInvalidReceiver(CompatReceiver... receivers) {
+    public void addInvalidReceiver(QuantumCompat... receivers) {
         addInvalidReceiver(Arrays.asList(receivers));
     }
 
-    public void addInvalidReceiver(Collection<CompatReceiver> receivers) {
+    public void addInvalidReceiver(Collection<QuantumCompat> receivers) {
         invalidReceivers.addAll(receivers);
     }
 
@@ -126,7 +127,7 @@ public abstract class AbstractCircuit implements Circuit {
     }
 
     @Override
-    public List<CompatReceiver> getInValidReceivers() {
+    public List<QuantumCompat> getInValidReceivers() {
         return new ArrayList<>(invalidReceivers);
     }
 
@@ -179,7 +180,7 @@ public abstract class AbstractCircuit implements Circuit {
         for (Receiver receiver : receivers.values()) {
             receiverMap.add(receiver.serialize());
         }
-        for (CompatReceiver receiver : invalidReceivers) {
+        for (QuantumCompat receiver : invalidReceivers) {
             receiverMap.add(receiver.serialize());
         }
         map.put("receiver", receiverMap);
@@ -213,7 +214,7 @@ public abstract class AbstractCircuit implements Circuit {
 
 
     @Override
-    public void actvate(int oldCurrent, int newCurrent, int chain) {
+    public void actvate(QuantumState oldState, QuantumState newState, int chain) {
 
         List<Receiver> receivers = new ArrayList<>(this.getReceivers());
 
@@ -221,9 +222,9 @@ public abstract class AbstractCircuit implements Circuit {
 
             if (receiver.isValid()) {
 
-                int receiverOldCurrent = receiver.getBlockCurrent();
+                QuantumState receiverOldCurrent = receiver.getState();
                 //
-                calculate(receiver, oldCurrent, newCurrent);
+                calculate(receiver, oldState, newState);
 
                 if (receiver.getLocation().getBlock().getType() == Material.TNT) { // TnT is one time use!
                     this.delReceiver(receiver);
@@ -236,7 +237,7 @@ public abstract class AbstractCircuit implements Circuit {
                     }
 
 
-                    api.activateCircuit(receiver.getLocation(), receiverOldCurrent, receiver.getBlockCurrent(), chain);
+                    api.activateCircuit(receiver.getLocation(), receiverOldCurrent, receiver.getState(), chain);
                 }
             } else {
                 this.delReceiver(receiver);
@@ -247,18 +248,18 @@ public abstract class AbstractCircuit implements Circuit {
     }
 
     @Override
-    public int getBlockCurrent() {
+    public QuantumState getBlockCurrent() {
         Block b = location.getBlock();
         Material material = b.getType();
         MaterialData md = b.getState().getData();
         if (md instanceof Redstone) {
-            return ((Redstone) md).isPowered() ? 15 : 0;
+            return ((Redstone) md).isPowered() ? QuantumState.S15 : QuantumState.S0;
         } else if (md instanceof Openable) {
-            return ((Openable) md).isOpen() ? 15 : 0;
+            return ((Openable) md).isOpen() ? QuantumState.S15 : QuantumState.S0;
         } else if (ValidMaterials.LAMP.contains(material)) {
-            return AbstractKeepAliveReceiver.keepAlives.contains(b) ? 15 : 0;
+            return AbstractKeepAliveReceiver.keepAlives.contains(b) ? QuantumState.S15 : QuantumState.S0;
         }
-        return b.getBlockPower();
+        return QuantumState.values()[b.getBlockPower()];
     }
 
     @Override

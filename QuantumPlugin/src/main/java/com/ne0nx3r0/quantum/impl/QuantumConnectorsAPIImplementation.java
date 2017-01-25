@@ -4,7 +4,7 @@ import com.ne0nx3r0.quantum.api.IQuantumConnectorsAPI;
 import com.ne0nx3r0.quantum.api.IRegistry;
 import com.ne0nx3r0.quantum.api.circuit.AbstractCircuit;
 import com.ne0nx3r0.quantum.api.receiver.AbstractReceiver;
-import com.ne0nx3r0.quantum.api.receiver.ReceiverState;
+import com.ne0nx3r0.quantum.api.receiver.QuantumState;
 import com.ne0nx3r0.quantum.impl.circuits.CircuitManager;
 import com.ne0nx3r0.quantum.impl.nmswrapper.QSWorld;
 import com.ne0nx3r0.quantum.impl.receiver.base.Registry;
@@ -56,12 +56,12 @@ public class QuantumConnectorsAPIImplementation implements IQuantumConnectorsAPI
     }
 
     @Override
-    public void setState(Block block, ReceiverState receiverState) {
+    public void setState(Block block, QuantumState receiverState) {
         variantWrapper.setState(block, receiverState);
     }
 
     @Override
-    public ReceiverState getState(Block block) {
+    public QuantumState getState(Block block) {
         return variantWrapper.getState(block);
     }
 
@@ -71,8 +71,8 @@ public class QuantumConnectorsAPIImplementation implements IQuantumConnectorsAPI
     }
 
     @Override
-    public void activateCircuit(Location location, int oldCurrent, int newCurrent, int chain) {
-        circuitManager.activateCircuit(location, oldCurrent, newCurrent, chain);
+    public void activateCircuit(Location location, QuantumState oldState, QuantumState newState, int chain) {
+        circuitManager.activateCircuit(location, oldState, newState, chain);
     }
 
     @Override

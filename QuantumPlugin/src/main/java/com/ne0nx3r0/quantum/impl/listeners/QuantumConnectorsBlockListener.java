@@ -1,7 +1,7 @@
 package com.ne0nx3r0.quantum.impl.listeners;
 
 import com.ne0nx3r0.quantum.QuantumConnectors;
-import com.ne0nx3r0.quantum.api.receiver.ReceiverState;
+import com.ne0nx3r0.quantum.api.receiver.QuantumState;
 import com.ne0nx3r0.quantum.impl.circuits.CircuitManager;
 import com.ne0nx3r0.quantum.impl.utils.MessageLogger;
 import com.ne0nx3r0.quantum.impl.utils.SourceBlockUtil;
@@ -33,11 +33,11 @@ public class QuantumConnectorsBlockListener implements Listener {
     @EventHandler(priority = EventPriority.LOW)
     public void onBlockRedstoneChange(BlockRedstoneEvent e) {
         if (circuitManager.circuitExists(e.getBlock().getLocation())) {
-            circuitManager.activateCircuit(e.getBlock().getLocation(), e.getOldCurrent(), e.getNewCurrent());
+            circuitManager.activateCircuit(e.getBlock().getLocation(), QuantumState.values()[e.getOldCurrent()], QuantumState.values()[e.getNewCurrent()]);
         }
 
         if (circuitManager.shouldLeaveReceiverOn(e.getBlock())) {
-            e.setNewCurrent(ReceiverState.S15.ordinal());
+            e.setNewCurrent(QuantumState.S15.ordinal());
         }
     }
 
@@ -57,7 +57,7 @@ public class QuantumConnectorsBlockListener implements Listener {
                 Location lFurnace = e.getBlock().getLocation();
 
                 //SEND ON
-                circuitManager.activateCircuit(lFurnace, ReceiverState.S0.ordinal(), ReceiverState.S1.ordinal());
+                circuitManager.activateCircuit(lFurnace, QuantumState.S0, QuantumState.S1);
 
                 //Schedule a check to send the corresponding OFF
                 Bukkit.getScheduler().scheduleSyncDelayedTask(
@@ -85,7 +85,7 @@ public class QuantumConnectorsBlockListener implements Listener {
             if (bFurnace.getType() == Material.FURNACE) {
                 //Send OFF
                 if (circuitManager.circuitExists(lFurnace)) {
-                    circuitManager.activateCircuit(lFurnace, ReceiverState.S1.ordinal(), ReceiverState.S0.ordinal());
+                    circuitManager.activateCircuit(lFurnace, QuantumState.S1, QuantumState.S0);
                 }
             }
         }

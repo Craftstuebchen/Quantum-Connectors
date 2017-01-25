@@ -1,4 +1,4 @@
-package com.ne0nx3r0.quantum.api.receiver;
+package com.ne0nx3r0.quantum.api.util;
 
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
@@ -8,12 +8,12 @@ import java.util.Map;
 /**
  * Created by Yannick on 24.01.2017.
  */
-public final class CompatReceiver implements ConfigurationSerializable {
+public final class QuantumCompat implements ConfigurationSerializable {
 
     private HashMap<String, Object> receiver;
 
 
-    public CompatReceiver(HashMap<String, Object> map) {
+    public QuantumCompat(HashMap<String, Object> map) {
         this.receiver = map;
     }
 

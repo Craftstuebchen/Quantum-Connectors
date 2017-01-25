@@ -3,9 +3,8 @@ package com.ne0nx3r0.quantum.impl.circuits;
 import com.ne0nx3r0.quantum.QuantumConnectors;
 import com.ne0nx3r0.quantum.api.IRegistry;
 import com.ne0nx3r0.quantum.api.circuit.AbstractCircuit;
-import com.ne0nx3r0.quantum.api.circuit.Circuit;
+import com.ne0nx3r0.quantum.api.util.QuantumCompat;
 import com.ne0nx3r0.quantum.impl.interfaces.ICircuitLoader;
-import com.ne0nx3r0.quantum.impl.receiver.CompatCircuit;
 import com.ne0nx3r0.quantum.impl.utils.MessageLogger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -26,7 +25,7 @@ public class CircuitLoader implements ICircuitLoader {
 
     private final IRegistry<AbstractCircuit> circuitIRegistry;
     private Map<World, Map<Location, AbstractCircuit>> worlds;
-    private Map<World, List<Circuit>> invalidCicuitsWorld = new HashMap<>();
+    private Map<World, List<QuantumCompat>> invalidCicuitsWorld = new HashMap<>();
     private CircuitManager circuitManager;
     private QuantumConnectors plugin;
     private MessageLogger messageLogger;
@@ -63,14 +62,14 @@ public class CircuitLoader implements ICircuitLoader {
                 messageLogger.log(messageLogger.getMessage("saving").replace("%file", ymlFile.getName()));
 
             Map<Location, AbstractCircuit> currentWorldCircuits = worlds.get(world);
-            List<Circuit> currentInvalidCircuits = invalidCicuitsWorld.get(world);
+            List<QuantumCompat> currentInvalidCircuits = invalidCicuitsWorld.get(world);
 
             List<Map<String, Object>> mapList = new ArrayList<>();
 
             for (Map.Entry<Location, AbstractCircuit> entry : currentWorldCircuits.entrySet()) {
                 mapList.add(entry.getValue().serialize());
             }
-            for (Circuit invalidCircuit : currentInvalidCircuits) {
+            for (QuantumCompat invalidCircuit : currentInvalidCircuits) {
                 mapList.add(invalidCircuit.serialize());
             }
 
@@ -101,7 +100,7 @@ public class CircuitLoader implements ICircuitLoader {
         //at least create a blank holder
         Map<Location, AbstractCircuit> worldCircuits = new HashMap<>();
         worlds.put(world, worldCircuits);
-        List<Circuit> invalidCircuits = new ArrayList<>();
+        List<QuantumCompat> invalidCircuits = new ArrayList<>();
         invalidCicuitsWorld.put(world, invalidCircuits);
 
         File ymlFile = new File(plugin.getDataFolder(), world.getName() + ".circuits.yml");
@@ -137,7 +136,7 @@ public class CircuitLoader implements ICircuitLoader {
                 Constructor<? extends AbstractCircuit> circuitConstructor = circuitIRegistry.getInstance(circuitType);
                 if (circuitConstructor == null) {
 
-                    Circuit circuit = new CompatCircuit((HashMap<String, Object>) tempCircuitMap);
+                    QuantumCompat circuit = new QuantumCompat((HashMap<String, Object>) tempCircuitMap);
                     invalidCircuits.add(circuit);
 
                     System.out.println("There is no receiver registered with this type: " + circuitType);

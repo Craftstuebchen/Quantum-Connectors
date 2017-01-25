@@ -2,14 +2,33 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <name>QuantumAPI</name>
+    <description>An API for Quantum-Connectors (wireless Circuit Plugin for SpigotAPI</description>
+    <url>http://maven.apache.org</url>
+
+
     <parent>
         <artifactId>QuantumConnectors</artifactId>
-        <groupId>com.ne0nx3r0.quantum</groupId>
+        <groupId>de.ysl3000</groupId>
         <version>3.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>QuantumAPI</artifactId>
+    <groupId>${parent.groupId}</groupId>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT/</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://svn.apache.org/viewvc/maven</url>
+    </scm>
 
     <build>
         <finalName>${project.name}</finalName>

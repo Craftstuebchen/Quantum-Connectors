@@ -1,5 +1,5 @@
 name: QuantumConnectors
-main: com.ne0nx3r0.quantum.QuantumConnectors
+main: de.ysl3000.quantum.QuantumConnectors
 version: '${project.version}'
 database: false
 startup: postworld

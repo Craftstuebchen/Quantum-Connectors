@@ -12,7 +12,7 @@
     <artifactId>QuantumPlugin</artifactId>
     <dependencies>
         <dependency>
-            <groupId>com.ne0nx3r0.quantum</groupId>
+            <groupId>de.ysl3000</groupId>
             <artifactId>QuantumAPI</artifactId>
             <version>3.0</version>
             <scope>compile</scope>

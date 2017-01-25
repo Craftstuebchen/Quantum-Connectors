@@ -10,7 +10,7 @@
 
     <parent>
         <artifactId>QuantumConnectors</artifactId>
-        <groupId>de.ysl3000</groupId>
+        <groupId>com.github.ysl3000</groupId>
         <version>3.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>

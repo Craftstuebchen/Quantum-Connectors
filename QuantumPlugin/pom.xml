@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>QuantumConnectors</artifactId>
-        <groupId>de.ysl3000</groupId>
+        <groupId>com.github.ysl3000</groupId>
         <version>3.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -12,7 +12,7 @@
     <artifactId>QuantumPlugin</artifactId>
     <dependencies>
         <dependency>
-            <groupId>de.ysl3000</groupId>
+            <groupId>${parent.groupId}</groupId>
             <artifactId>QuantumAPI</artifactId>
             <version>3.0</version>
             <scope>compile</scope>

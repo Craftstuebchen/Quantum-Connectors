@@ -22,7 +22,7 @@ public interface Receiver extends ConfigurationSerializable {
 
     boolean isValid();
 
-    QuantumState getState();
+    int getBlockCurrent();
 
 
 }

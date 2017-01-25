@@ -1,7 +1,7 @@
 package com.ne0nx3r0.quantum.impl.utils;
 
 import com.ne0nx3r0.quantum.api.receiver.AbstractKeepAliveReceiver;
-import com.ne0nx3r0.quantum.api.receiver.QuantumState;
+import com.ne0nx3r0.quantum.api.receiver.ReceiverState;
 import com.ne0nx3r0.quantum.api.util.ValidMaterials;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -12,7 +12,7 @@ import org.bukkit.material.*;
 
 public class VariantWrapper {
 
-    public void setState(Block block, QuantumState receiverState) {
+    public void setState(Block block, ReceiverState receiverState) {
         BlockState blockState = block.getState();
         MaterialData md = blockState.getData();
         if (md instanceof Colorable) {
@@ -27,20 +27,20 @@ public class VariantWrapper {
         blockState.update();
     }
 
-    public QuantumState getState(Block block) {
+    public ReceiverState getState(Block block) {
         Material material = block.getType();
         MaterialData md = block.getState().getData();
         if (md instanceof Redstone) {
-            return ((Redstone) md).isPowered() ? QuantumState.S15 : QuantumState.S0;
+            return ((Redstone) md).isPowered() ? ReceiverState.S15 : ReceiverState.S0;
         } else if (md instanceof Openable) {
-            return ((Openable) md).isOpen() ? QuantumState.S15 : QuantumState.S0;
+            return ((Openable) md).isOpen() ? ReceiverState.S15 : ReceiverState.S0;
         } else if (ValidMaterials.LAMP.contains(material)) {
-            return AbstractKeepAliveReceiver.keepAlives.contains(block) ? QuantumState.S15 : QuantumState.S0;
+            return AbstractKeepAliveReceiver.keepAlives.contains(block) ? ReceiverState.S15 : ReceiverState.S0;
         } else if (md instanceof Colorable) {
-            return QuantumState.getByDyeColor(((Colorable) md).getColor());
+            return ReceiverState.getByDyeColor(((Colorable) md).getColor());
         }
 
-        return QuantumState.values()[block.getBlockPower()];
+        return ReceiverState.values()[block.getBlockPower()];
 
     }
 }

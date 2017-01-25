@@ -2,9 +2,8 @@ package com.ne0nx3r0.quantum.impl.receiver.base;
 
 import com.ne0nx3r0.quantum.api.circuit.Circuit;
 import com.ne0nx3r0.quantum.api.receiver.AbstractReceiver;
-import com.ne0nx3r0.quantum.api.receiver.QuantumState;
+import com.ne0nx3r0.quantum.api.receiver.CompatReceiver;
 import com.ne0nx3r0.quantum.api.receiver.Receiver;
-import com.ne0nx3r0.quantum.api.util.QuantumCompat;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -73,7 +72,7 @@ public class DelayedCircuit implements Circuit {
     }
 
     @Override
-    public List<QuantumCompat> getInValidReceivers() {
+    public List<CompatReceiver> getInValidReceivers() {
         return circuit.getInValidReceivers();
     }
 
@@ -123,16 +122,16 @@ public class DelayedCircuit implements Circuit {
     }
 
     @Override
-    public void calculate(Receiver receiver, QuantumState oldState, QuantumState newState) {
-        circuit.calculate(receiver, oldState, newState);
+    public void calculate(Receiver receiver, int oldCurrent, int newCurrent) {
+        circuit.calculate(receiver, oldCurrent, newCurrent);
     }
 
     @Override
-    public void actvate(QuantumState oldCurrent, QuantumState newState, int chain) {
+    public void actvate(int oldCurrent, int newCurrent, int chain) {
         Bukkit.getScheduler().runTaskLater(this.javaPlugin, new Runnable() {
             @Override
             public void run() {
-                circuit.actvate(oldCurrent, newState, chain);
+                circuit.actvate(oldCurrent, newCurrent, chain);
 
             }
         }, circuit.getDelay() * 20);
@@ -144,7 +143,7 @@ public class DelayedCircuit implements Circuit {
     }
 
     @Override
-    public QuantumState getBlockCurrent() {
+    public int getBlockCurrent() {
         return circuit.getBlockCurrent();
     }
 

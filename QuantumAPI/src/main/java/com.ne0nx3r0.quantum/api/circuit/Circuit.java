@@ -2,9 +2,8 @@ package com.ne0nx3r0.quantum.api.circuit;
 
 import com.ne0nx3r0.quantum.api.IValidMaterials;
 import com.ne0nx3r0.quantum.api.receiver.AbstractReceiver;
-import com.ne0nx3r0.quantum.api.receiver.QuantumState;
+import com.ne0nx3r0.quantum.api.receiver.CompatReceiver;
 import com.ne0nx3r0.quantum.api.receiver.Receiver;
-import com.ne0nx3r0.quantum.api.util.QuantumCompat;
 import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
@@ -32,7 +31,7 @@ public interface Circuit extends IValidMaterials, ConfigurationSerializable {
 
     int getReceiversCount();
 
-    List<QuantumCompat> getInValidReceivers();
+    List<CompatReceiver> getInValidReceivers();
 
     int getWholeReceiverCount();
 
@@ -50,7 +49,7 @@ public interface Circuit extends IValidMaterials, ConfigurationSerializable {
 
     boolean isValid();
 
-    QuantumState getBlockCurrent();
+    int getBlockCurrent();
 
     Location getLocation();
 
@@ -60,7 +59,7 @@ public interface Circuit extends IValidMaterials, ConfigurationSerializable {
 
     void setDelay(int delay);
 
-    void calculate(Receiver receiver, QuantumState oldState, QuantumState newState);
+    void calculate(Receiver receiver, int oldCurrent, int newCurrent);
 
-    void actvate(QuantumState oldState, QuantumState newState, int chain);
+    void actvate(int oldCurrent, int newCurrent, int chain);
 }

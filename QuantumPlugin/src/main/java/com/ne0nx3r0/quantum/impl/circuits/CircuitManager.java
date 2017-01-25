@@ -6,7 +6,6 @@ import com.ne0nx3r0.quantum.api.QuantumConnectorsAPI;
 import com.ne0nx3r0.quantum.api.circuit.AbstractCircuit;
 import com.ne0nx3r0.quantum.api.receiver.AbstractKeepAliveReceiver;
 import com.ne0nx3r0.quantum.api.receiver.AbstractReceiver;
-import com.ne0nx3r0.quantum.api.receiver.QuantumState;
 import com.ne0nx3r0.quantum.impl.interfaces.ICircuitManager;
 import com.ne0nx3r0.quantum.impl.receiver.base.DelayedCircuit;
 import com.ne0nx3r0.quantum.impl.utils.MessageLogger;
@@ -100,18 +99,20 @@ public final class CircuitManager implements ICircuitManager {
         return worlds.get(circuitLocation.getWorld()).containsKey(circuitLocation);
     }
 
+    // TODO: 23.01.2017 try to remove magic numbers
     // Circuit activation
-    public void activateCircuit(Location lSender, QuantumState oldState, QuantumState newState) {
-        activateCircuit(lSender, oldState, newState, 0);
+    public void activateCircuit(Location lSender, int oldCurrent, int newCurrent) {
+        activateCircuit(lSender, oldCurrent, newCurrent, 0);
     }
 
-    public void activateCircuit(Location lSender, QuantumState oldState, QuantumState newState, int chain) {
+    // TODO: 23.01.2017 try to remove magic numbers
+    public void activateCircuit(Location lSender, int oldCurrent, int newCurrent, int chain) {
         AbstractCircuit circuit = getCircuit(lSender);
 
         if (circuit.getDelay() > 0) {
-            new DelayedCircuit(plugin, circuit).actvate(oldState, newState, chain);
+            new DelayedCircuit(plugin, circuit).actvate(oldCurrent, newCurrent, chain);
         } else {
-            circuit.actvate(oldState, newState, chain);
+            circuit.actvate(oldCurrent, newCurrent, chain);
         }
     }
 

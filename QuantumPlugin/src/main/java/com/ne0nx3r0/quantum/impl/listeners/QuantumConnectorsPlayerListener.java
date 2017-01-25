@@ -5,7 +5,7 @@ import com.ne0nx3r0.quantum.api.IQuantumConnectorsAPI;
 import com.ne0nx3r0.quantum.api.circuit.Circuit;
 import com.ne0nx3r0.quantum.api.receiver.AbstractKeepAliveReceiver;
 import com.ne0nx3r0.quantum.api.receiver.AbstractReceiver;
-import com.ne0nx3r0.quantum.api.receiver.QuantumState;
+import com.ne0nx3r0.quantum.api.receiver.ReceiverState;
 import com.ne0nx3r0.quantum.api.util.ValidMaterials;
 import com.ne0nx3r0.quantum.impl.circuits.CircuitManager;
 import com.ne0nx3r0.quantum.impl.receiver.base.Registry;
@@ -132,14 +132,11 @@ public class QuantumConnectorsPlayerListener implements Listener {
                                 List<Class<? extends AbstractReceiver>> possibleReceivers = this.receiverRegistry.fromType(location);
 
 
+                                // TODO: 20.01.2017 create inventory with possible Receivers
+                                // TODO: 20.01.2017 move to inventory listener ->
                                 //Add the receiver to our new/found circuit
                                 // temp solution
                                 if (possibleReceivers.size() > 0) {
-                                    if (possibleReceivers.size() > 1) {
-                                        // TODO: 25.01.2017 List possible receivers and set player <-> lastClicked Location to add possible receiver
-                                    }
-
-
                                     try {
                                         pc.addReceiver(possibleReceivers.get(0), location, pc.getDelay());
                                     } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
@@ -148,6 +145,12 @@ public class QuantumConnectorsPlayerListener implements Listener {
                                         messageLogger.msg(player, "Added a receiver! (#" + pc.getReceiversCount() + ")" + ChatColor.YELLOW + " ('/qc done', or add more)");
                                     }
                                 }
+
+                                // TODO: 20.01.2017 until here
+
+                                // TODO: 20.01.2017 idea of pregenerating inventory for each MaterialType registered
+
+
                             }
                         }
                         //Went over max circuits
@@ -176,25 +179,25 @@ public class QuantumConnectorsPlayerListener implements Listener {
 
             if (ValidMaterials.OPENABLE.contains(block.getType())) {
 
-                QuantumState receiverState = api.getState(block);
+                ReceiverState receiverState = api.getState(block);
 
-                circuitManager.activateCircuit(location, receiverState, receiverState.getOpposite());
+                circuitManager.activateCircuit(location, receiverState.ordinal(), receiverState.getOpposite().ordinal());
 
             } else if (block.getType() == Material.BOOKSHELF) {
 
-                QuantumState state;
+                ReceiverState state;
                 if (AbstractKeepAliveReceiver.keepAlives.contains(block)) {
                     // send off
-                    state = QuantumState.S0;
+                    state = ReceiverState.S0;
 
                     AbstractKeepAliveReceiver.keepAlives.remove(block);
                 } else {
                     // send on
-                    state = QuantumState.S15;
+                    state = ReceiverState.S15;
                     AbstractKeepAliveReceiver.keepAlives.add(block);
                 }
 
-                circuitManager.activateCircuit(location, state.getOpposite(), state);
+                circuitManager.activateCircuit(location, state.getOpposite().ordinal(), state.ordinal());
             }
         }
     }
@@ -208,7 +211,7 @@ public class QuantumConnectorsPlayerListener implements Listener {
         Location location = api.getSourceBlock(ih.getInventory().getLocation());
 
         if (circuitManager.circuitExists(location))
-            circuitManager.activateCircuit(location, QuantumState.S0, QuantumState.S5);
+            circuitManager.activateCircuit(location, ReceiverState.S0.ordinal(), ReceiverState.S5.ordinal());
     }
 
 
@@ -222,7 +225,7 @@ public class QuantumConnectorsPlayerListener implements Listener {
         Location location = api.getSourceBlock(ih.getInventory().getLocation());
 
         if (circuitManager.circuitExists(location))
-            circuitManager.activateCircuit(location, QuantumState.S0, QuantumState.S5);
+            circuitManager.activateCircuit(location, ReceiverState.S0.ordinal(), ReceiverState.S5.ordinal());
 
     }
 
@@ -231,7 +234,7 @@ public class QuantumConnectorsPlayerListener implements Listener {
         Location location = api.getSourceBlock(e.getBed().getLocation());
         if (circuitManager.circuitExists(location)) {
             // send on
-            circuitManager.activateCircuit(location, QuantumState.S0, QuantumState.S5);
+            circuitManager.activateCircuit(location, ReceiverState.S0.ordinal(), ReceiverState.S5.ordinal());
         }
     }
 
@@ -241,7 +244,7 @@ public class QuantumConnectorsPlayerListener implements Listener {
         Location location = api.getSourceBlock(e.getBed().getLocation());
         if (circuitManager.circuitExists(location)) {
             // send off
-            circuitManager.activateCircuit(location, QuantumState.S5, QuantumState.S0);
+            circuitManager.activateCircuit(location, ReceiverState.S5.ordinal(), ReceiverState.S0.ordinal());
         }
     }
 }

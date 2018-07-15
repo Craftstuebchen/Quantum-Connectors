@@ -6,7 +6,7 @@
 
     <groupId>com.github.ysl3000</groupId>
     <artifactId>QuantumConnectors</artifactId>
-    <version>3.0</version>
+    <version>3.0-1.13</version>
     <modules>
         <module>QuantumAPI</module>
         <module>QuantumPlugin</module>
@@ -17,7 +17,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spigot.version>1.12</spigot.version>
+        <spigot.version>1.13-pre7</spigot.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>

@@ -2,6 +2,7 @@ name: QuantumConnectors
 main: com.github.ysl3000.quantum.QuantumConnectors
 version: '${project.version}'
 database: false
+api-version: 1.13
 startup: postworld
 description: Wireless redstone connections
 commands:

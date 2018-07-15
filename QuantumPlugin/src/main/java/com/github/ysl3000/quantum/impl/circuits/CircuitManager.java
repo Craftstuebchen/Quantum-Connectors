@@ -48,7 +48,7 @@ public final class CircuitManager implements ICircuitActivator {
 
     @Override
     public boolean isValidReceiver(Block block) {
-        return QuantumConnectorsAPI.getReceiverRegistry().isValid(block);
+        return this.receiverIRegistry.isValid(block);
     }
 
     @Override

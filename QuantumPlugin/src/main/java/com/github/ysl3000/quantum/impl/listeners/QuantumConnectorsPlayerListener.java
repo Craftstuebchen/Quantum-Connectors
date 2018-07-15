@@ -6,8 +6,6 @@ import com.github.ysl3000.quantum.api.circuit.Circuit;
 import com.github.ysl3000.quantum.api.receiver.AbstractKeepAliveReceiver;
 import com.github.ysl3000.quantum.api.receiver.AbstractReceiver;
 import com.github.ysl3000.quantum.api.receiver.ReceiverState;
-import com.github.ysl3000.quantum.api.util.ValidMaterials;
-import com.github.ysl3000.quantum.impl.circuits.CircuitManager;
 import com.github.ysl3000.quantum.impl.interfaces.ICircuitActivator;
 import com.github.ysl3000.quantum.impl.receiver.base.Registry;
 import com.github.ysl3000.quantum.impl.utils.MessageLogger;
@@ -75,6 +73,7 @@ public class QuantumConnectorsPlayerListener implements Listener {
                 && circuitManager.hasPendingCircuit(event.getPlayer())) {
             Player player = event.getPlayer();
             Circuit pc = circuitManager.getPendingCircuit(player);
+            event.setCancelled(true);
 
             //No sender yet
             if (pc.getLocation() == null) {
@@ -178,13 +177,7 @@ public class QuantumConnectorsPlayerListener implements Listener {
         //Clicked on a block that has a quantum circuit (sender) attached
         else if (circuitManager.circuitExists(location)) {
 
-            if (ValidMaterials.OPENABLE.contains(block.getType())) {
-
-                ReceiverState receiverState = api.getState(block);
-
-                circuitManager.activateCircuit(location, receiverState.ordinal(), receiverState.getOpposite().ordinal());
-
-            } else if (block.getType() == Material.BOOKSHELF) {
+            if (block.getType() == Material.BOOKSHELF) {
 
                 ReceiverState state;
                 if (AbstractKeepAliveReceiver.keepAlives.contains(block)) {
@@ -199,7 +192,14 @@ public class QuantumConnectorsPlayerListener implements Listener {
                 }
 
                 circuitManager.activateCircuit(location, state.getOpposite().ordinal(), state.ordinal());
+                return;
             }
+
+
+            ReceiverState receiverState = api.getState(block);
+
+            circuitManager.activateCircuit(location, receiverState.ordinal(), receiverState.getOpposite().ordinal());
+
         }
     }
 

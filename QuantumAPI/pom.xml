@@ -11,12 +11,11 @@
     <parent>
         <artifactId>QuantumConnectors</artifactId>
         <groupId>com.github.ysl3000</groupId>
-        <version>3.0</version>
+        <version>3.0-1.13</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>QuantumAPI</artifactId>
-    <groupId>${parent.groupId}</groupId>
 
     <licenses>
         <license>

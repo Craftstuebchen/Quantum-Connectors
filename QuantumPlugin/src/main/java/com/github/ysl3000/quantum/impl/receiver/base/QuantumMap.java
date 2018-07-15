@@ -16,14 +16,15 @@ public class QuantumMap<T> {
     }
 
     public Class<? extends T> put(Material material, Class<? extends T> receiver) {
-        List<Class<? extends T>> abstClassList = materialMap.get(material);
 
-        if (abstClassList == null) {
-            abstClassList = new ArrayList<>();
-            materialMap.put(material, abstClassList);
+        if (!materialMap.containsKey(material)) {
+            materialMap.put(material, new ArrayList<>());
         }
 
-        return abstClassList.add(receiver) ? receiver : null;
+        if (materialMap.get(material).add(receiver))
+            System.out.println("[QUANTUM]  Registered receiver with material: " + material + "  " + receiver.getSimpleName());
+
+        return receiver;
     }
 
     public Class<? extends T> remove(String key) {

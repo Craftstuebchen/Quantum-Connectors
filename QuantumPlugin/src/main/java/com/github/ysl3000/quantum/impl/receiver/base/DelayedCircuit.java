@@ -152,7 +152,7 @@ public class DelayedCircuit implements Circuit {
     }
 
     @Override
-    public List<Material> getValidMaterials() {
+    public Collection<Material> getValidMaterials() {
         return circuit.getValidMaterials();
     }
 }

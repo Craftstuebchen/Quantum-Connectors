@@ -3,22 +3,25 @@ package com.github.ysl3000.quantum.api.circuit;
 import com.github.ysl3000.quantum.api.IQuantumConnectorsAPI;
 import com.github.ysl3000.quantum.api.IRegistry;
 import com.github.ysl3000.quantum.api.QuantumConnectorsAPI;
-import com.github.ysl3000.quantum.api.receiver.AbstractKeepAliveReceiver;
+import com.github.ysl3000.quantum.api.ValidCircuitMaterials;
 import com.github.ysl3000.quantum.api.receiver.AbstractReceiver;
 import com.github.ysl3000.quantum.api.receiver.CompatReceiver;
 import com.github.ysl3000.quantum.api.receiver.Receiver;
-import com.github.ysl3000.quantum.api.util.ValidMaterials;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Block;
-import org.bukkit.material.MaterialData;
-import org.bukkit.material.Openable;
+import org.bukkit.block.data.AnaloguePowerable;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Openable;
 import org.bukkit.material.Redstone;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Yannick on 23.01.2017.
@@ -198,14 +201,13 @@ public abstract class AbstractCircuit implements Circuit {
     @Override
     public int getBlockCurrent() {
         Block b = location.getBlock();
-        Material material = b.getType();
-        MaterialData md = b.getState().getData();
-        if (md instanceof Redstone) {
-            return ((Redstone) md).isPowered() ? 15 : 0;
-        } else if (md instanceof Openable) {
-            return ((Openable) md).isOpen() ? 15 : 0;
-        } else if (ValidMaterials.LAMP.contains(material)) {
-            return AbstractKeepAliveReceiver.keepAlives.contains(b) ? 15 : 0;
+        BlockData blockData = b.getBlockData();
+        if (blockData instanceof Redstone) {
+            return ((Redstone) blockData).isPowered() ? 15 : 0;
+        } else if (blockData instanceof Openable) {
+            return ((Openable) blockData).isOpen() ? 15 : 0;
+        } else if (blockData instanceof AnaloguePowerable) {
+            return ((AnaloguePowerable) blockData).getPower();
         }
         return b.getBlockPower();
     }
@@ -260,12 +262,17 @@ public abstract class AbstractCircuit implements Circuit {
                 this.delReceiver(receiver);
             }
         }
-
-
     }
+
 
     @Override
-    public List<Material> getValidMaterials() {
-        return ValidMaterials.validSenders;
+    public Collection<Material> getValidMaterials() {
+        return ValidCircuitMaterials.VALID_MATERIALS;
     }
+
+
+
+
+
 }
+

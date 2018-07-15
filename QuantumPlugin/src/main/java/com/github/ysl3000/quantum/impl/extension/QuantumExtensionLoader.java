@@ -6,6 +6,8 @@ import com.github.ysl3000.quantum.impl.utils.MessageLogger;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashSet;
@@ -35,12 +37,7 @@ public class QuantumExtensionLoader {
 
         if (file.exists() && file.isDirectory()) {
 
-            File[] files = file.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".jar");
-                }
-            });
+            File[] files = file.listFiles((dir, name) -> name.endsWith(".jar"));
 
             for (File jar : files) {
                 String mainClass = null;
@@ -76,17 +73,17 @@ public class QuantumExtensionLoader {
         for (Class<?> clazz : quantumExtensionsClass) {
 
             try {
-                Object object = clazz.newInstance();
 
-                if (object instanceof QuantumExtension) {
-                    QuantumExtension quantumExtension = (QuantumExtension) object;
+                if (QuantumExtension.class.isAssignableFrom(clazz)) {
+                    Constructor<? extends QuantumExtension> quantumExtensionConstructor = clazz.asSubclass(QuantumExtension.class).getConstructor();
+
+                    QuantumExtension quantumExtension = quantumExtensionConstructor.newInstance();
                     quantumExtension.onEnable(api);
                     quantumExtensions.add(quantumExtension);
                     messageLogger.log(Level.INFO, quantumExtension.getExtensionName() + " enabled!");
+
                 }
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         }

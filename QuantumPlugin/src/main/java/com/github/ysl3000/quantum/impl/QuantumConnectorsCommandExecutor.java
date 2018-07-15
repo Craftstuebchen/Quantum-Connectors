@@ -4,7 +4,7 @@ import com.github.ysl3000.quantum.QuantumConnectors;
 import com.github.ysl3000.quantum.api.circuit.AbstractCircuit;
 import com.github.ysl3000.quantum.api.receiver.AbstractReceiver;
 import com.github.ysl3000.quantum.api.receiver.CompatReceiver;
-import com.github.ysl3000.quantum.impl.circuits.CircuitManager;
+import com.github.ysl3000.quantum.impl.interfaces.ICircuitActivator;
 import com.github.ysl3000.quantum.impl.utils.MessageLogger;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -18,10 +18,10 @@ import java.util.List;
 
 public class QuantumConnectorsCommandExecutor implements CommandExecutor {
     private QuantumConnectors plugin;
-    private CircuitManager circuitManager;
+    private ICircuitActivator circuitManager;
     private MessageLogger messageLogger;
 
-    public QuantumConnectorsCommandExecutor(QuantumConnectors plugin, CircuitManager circuitManager, MessageLogger messageLogger) {
+    public QuantumConnectorsCommandExecutor(QuantumConnectors plugin, ICircuitActivator circuitManager, MessageLogger messageLogger) {
         this.plugin = plugin;
         this.circuitManager = circuitManager;
         this.messageLogger = messageLogger;

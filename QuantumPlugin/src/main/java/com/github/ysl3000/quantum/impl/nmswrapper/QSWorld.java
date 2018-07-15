@@ -6,7 +6,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 
-public class QSWorld {
+public class QSWorld implements IQSWorld {
 
 
 
@@ -16,6 +16,7 @@ public class QSWorld {
         this.classRegistry = classRegistry;
     }
 
+    @Override
     public void setStatic(World world, boolean isStatic) {
         try {
             Object nmsWorld = classRegistry.getNmsWorldField().invoke(world);

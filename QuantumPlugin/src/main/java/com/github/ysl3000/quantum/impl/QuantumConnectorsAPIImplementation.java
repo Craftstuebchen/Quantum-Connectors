@@ -5,8 +5,8 @@ import com.github.ysl3000.quantum.api.IRegistry;
 import com.github.ysl3000.quantum.api.circuit.AbstractCircuit;
 import com.github.ysl3000.quantum.api.receiver.AbstractReceiver;
 import com.github.ysl3000.quantum.api.receiver.ReceiverState;
-import com.github.ysl3000.quantum.impl.circuits.CircuitManager;
-import com.github.ysl3000.quantum.impl.nmswrapper.QSWorld;
+import com.github.ysl3000.quantum.impl.interfaces.ICircuitActivator;
+import com.github.ysl3000.quantum.impl.nmswrapper.IQSWorld;
 import com.github.ysl3000.quantum.impl.receiver.base.Registry;
 import com.github.ysl3000.quantum.impl.utils.SourceBlockUtil;
 import com.github.ysl3000.quantum.impl.utils.VariantWrapper;
@@ -17,19 +17,18 @@ import org.bukkit.block.Block;
 public class QuantumConnectorsAPIImplementation implements IQuantumConnectorsAPI {
 
     private final int maxChainLinks;
-    private final CircuitManager circuitManager;
+    private final ICircuitActivator circuitManager;
     private Registry<AbstractReceiver> receiverRegistry;
     private Registry<AbstractCircuit> circuitRegistry;
     private SourceBlockUtil sourceBlockUtil;
-    private QSWorld qsWorld;
+    private IQSWorld IQSWorld;
     private VariantWrapper variantWrapper;
 
-    public QuantumConnectorsAPIImplementation(Registry<AbstractReceiver> receiverRegistry, Registry<AbstractCircuit> circuitRegistry, SourceBlockUtil sourceBlockUtil, QSWorld qsWorld, VariantWrapper variantWrapper, int maxChainLinks,
-                                              CircuitManager circuitManager) {
+    public QuantumConnectorsAPIImplementation(Registry<AbstractReceiver> receiverRegistry, Registry<AbstractCircuit> circuitRegistry, SourceBlockUtil sourceBlockUtil, IQSWorld IQSWorld, VariantWrapper variantWrapper, int maxChainLinks, ICircuitActivator circuitManager) {
         this.receiverRegistry = receiverRegistry;
         this.circuitRegistry = circuitRegistry;
         this.sourceBlockUtil = sourceBlockUtil;
-        this.qsWorld = qsWorld;
+        this.IQSWorld = IQSWorld;
         this.variantWrapper = variantWrapper;
         this.maxChainLinks = maxChainLinks;
         this.circuitManager = circuitManager;
@@ -52,7 +51,7 @@ public class QuantumConnectorsAPIImplementation implements IQuantumConnectorsAPI
 
     @Override
     public void setStatic(World world, boolean isStatic) {
-        qsWorld.setStatic(world, isStatic);
+        IQSWorld.setStatic(world, isStatic);
     }
 
     @Override

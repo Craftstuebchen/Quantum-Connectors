@@ -6,6 +6,7 @@ import com.github.ysl3000.quantum.api.QuantumConnectorsAPI;
 import com.github.ysl3000.quantum.api.circuit.AbstractCircuit;
 import com.github.ysl3000.quantum.api.receiver.AbstractKeepAliveReceiver;
 import com.github.ysl3000.quantum.api.receiver.AbstractReceiver;
+import com.github.ysl3000.quantum.impl.interfaces.ICircuitActivator;
 import com.github.ysl3000.quantum.impl.interfaces.ICircuitManager;
 import com.github.ysl3000.quantum.impl.receiver.base.DelayedCircuit;
 import com.github.ysl3000.quantum.impl.utils.MessageLogger;
@@ -23,20 +24,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public final class CircuitManager implements ICircuitManager {
+public final class CircuitManager implements ICircuitActivator {
 
     private MessageLogger messageLogger;
-    // Temporary Holders for circuit creation
     private Map<String, AbstractCircuit> pendingCircuits;
-    // Allow circuitTypes/circuits
     private QuantumConnectors plugin;
-    // Lookup/Storage for circuits, and subsequently their receivers
     private Map<World, Map<Location, AbstractCircuit>> worlds = new HashMap<>();
     private CircuitLoader circuitLoader;
     private IRegistry<AbstractCircuit> circuitIRegistry;
     private IRegistry<AbstractReceiver> receiverIRegistry;
 
-    // Main
     public CircuitManager(MessageLogger messageLogger, final QuantumConnectors qc, IRegistry<AbstractCircuit> circuitIRegistry, IRegistry<AbstractReceiver> receiverIRegistry) {
         this.messageLogger = messageLogger;
         this.plugin = qc;
@@ -44,63 +41,73 @@ public final class CircuitManager implements ICircuitManager {
         this.receiverIRegistry = receiverIRegistry;
         this.circuitLoader = new CircuitLoader(qc, worlds, this, messageLogger, circuitIRegistry);
 
-        //Create a holder for pending circuits
         this.pendingCircuits = new HashMap<>();
 
-        //Init any loaded worlds
         circuitLoader.loadWorlds();
     }
 
+    @Override
     public boolean isValidReceiver(Block block) {
         return QuantumConnectorsAPI.getReceiverRegistry().isValid(block);
     }
 
+    @Override
     public boolean isValidSender(Block block) {
         return this.circuitIRegistry.isValid(block);
     }
 
+    @Override
     public String getValidSendersAsString() {
         return String.join(", ", circuitIRegistry.getNames());
     }
 
+    @Override
     public boolean shouldLeaveReceiverOn(Block block) {
         return AbstractKeepAliveReceiver.keepAlives.contains(block);
     }
 
+    @Override
     public String getValidSendersMaterialsAsString() {
         return getValidString(circuitIRegistry.getMaterials());
     }
 
-    private String getValidString(Set<Material> materials) {
+    @Override
+    public String getValidString(Set<Material> materials) {
         return String.join(", ", Normalizer.normalizeEnumNames(materials, Normalizer.NORMALIZER));
     }
 
+    @Override
     public String getValidReceiversMaterialsAsString() {
         return getValidString(receiverIRegistry.getMaterials());
     }
 
+    @Override
     public void addCircuit(AbstractCircuit pc) {
         worlds.get(pc.getLocation().getWorld())
                 .put(pc.getLocation(), pc);
     }
 
+    @Override
     public void removeCircuit(Location circuitLocation) {
         if (circuitExists(circuitLocation)) {
             worlds.get(circuitLocation.getWorld()).remove(circuitLocation);
         }
     }
 
+    @Override
     public boolean circuitExists(Location circuitLocation) {
         return worlds.get(circuitLocation.getWorld()).containsKey(circuitLocation);
     }
 
     // TODO: 23.01.2017 try to remove magic numbers
     // Circuit activation
+    @Override
     public void activateCircuit(Location lSender, int oldCurrent, int newCurrent) {
         activateCircuit(lSender, oldCurrent, newCurrent, 0);
     }
 
     // TODO: 23.01.2017 try to remove magic numbers
+    @Override
     public void activateCircuit(Location lSender, int oldCurrent, int newCurrent, int chain) {
         AbstractCircuit circuit = getCircuit(lSender);
 
@@ -111,10 +118,12 @@ public final class CircuitManager implements ICircuitManager {
         }
     }
 
+    @Override
     public AbstractCircuit getCircuit(Location circuitLocation) {
         return worlds.get(circuitLocation.getWorld()).get(circuitLocation);
     }
 
+    @Override
     public AbstractCircuit addPendingCircuit(Player player, String type, int delay) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 
         Class<? extends AbstractCircuit> clazz = circuitIRegistry.getFromUniqueKey(type);
@@ -129,27 +138,33 @@ public final class CircuitManager implements ICircuitManager {
         return pc;
     }
 
+    @Override
     public AbstractCircuit getPendingCircuit(Player player) {
         return pendingCircuits.get(player.getName());
     }
 
+    @Override
     public boolean hasPendingCircuit(Player player) {
         return pendingCircuits.containsKey(player.getName());
     }
 
+    @Override
     public void removePendingCircuit(Player player) {
         pendingCircuits.remove(player.getName());
     }
 
     //Circuit Types
+    @Override
     public boolean isValidCircuitType(String type) {
         return circuitIRegistry.getFromUniqueKey(type) != null;
     }
 
+    @Override
     public CircuitLoader getCircuitLoader() {
         return circuitLoader;
     }
 
+    @Override
     public Set<Location> circuitLocations(World w) {
         return worlds.get(w).keySet();
     }

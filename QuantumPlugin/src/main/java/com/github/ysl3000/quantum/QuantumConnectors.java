@@ -7,10 +7,12 @@ import com.github.ysl3000.quantum.impl.QuantumConnectorsAPIImplementation;
 import com.github.ysl3000.quantum.impl.QuantumConnectorsCommandExecutor;
 import com.github.ysl3000.quantum.impl.circuits.CircuitManager;
 import com.github.ysl3000.quantum.impl.extension.QuantumExtensionLoader;
+import com.github.ysl3000.quantum.impl.interfaces.ICircuitActivator;
 import com.github.ysl3000.quantum.impl.listeners.QuantumConnectorsBlockListener;
 import com.github.ysl3000.quantum.impl.listeners.QuantumConnectorsPlayerListener;
 import com.github.ysl3000.quantum.impl.listeners.QuantumConnectorsWorldListener;
 import com.github.ysl3000.quantum.impl.nmswrapper.ClassRegistry;
+import com.github.ysl3000.quantum.impl.nmswrapper.IQSWorld;
 import com.github.ysl3000.quantum.impl.nmswrapper.QSWorld;
 import com.github.ysl3000.quantum.impl.receiver.base.Registry;
 import com.github.ysl3000.quantum.impl.utils.MessageLogger;
@@ -44,7 +46,7 @@ public class QuantumConnectors extends JavaPlugin {
     private QuantumConnectorsAPIImplementation api;
     private Map<String, String> messages;
     private QuantumConnectorsWorldListener worldListener;
-    private CircuitManager circuitManager;
+    private ICircuitActivator circuitManager;
     private QuantumConnectorsPlayerListener playerListener;
     private QuantumConnectorsBlockListener blockListener;
     private MessageLogger messageLogger;
@@ -62,7 +64,7 @@ public class QuantumConnectors extends JavaPlugin {
     private QuantumExtensionLoader loader;
     private SourceBlockUtil sourceBlockUtil;
     private ClassRegistry classRegistry;
-    private QSWorld qsWorld;
+    private IQSWorld IQSWorld;
     private VariantWrapper variantWrapper;
 
     @Override
@@ -95,9 +97,9 @@ public class QuantumConnectors extends JavaPlugin {
         this.sourceBlockUtil = new SourceBlockUtil();
         this.classRegistry = new ClassRegistry();
         this.apiVersion = this.classRegistry.getApiVersion();
-        this.qsWorld = new QSWorld(this.classRegistry);
+        this.IQSWorld = new QSWorld(this.classRegistry);
         this.variantWrapper = new VariantWrapper();
-        this.api = new QuantumConnectorsAPIImplementation(this.receiverRegistry, this.circuitRegistry, this.sourceBlockUtil, this.qsWorld, this.variantWrapper, MAX_CHAIN_LINKS, this.circuitManager);
+        this.api = new QuantumConnectorsAPIImplementation(this.receiverRegistry, this.circuitRegistry, this.sourceBlockUtil, this.IQSWorld, this.variantWrapper, MAX_CHAIN_LINKS, this.circuitManager);
 
         QuantumConnectorsAPI.setApi(this.api);
 

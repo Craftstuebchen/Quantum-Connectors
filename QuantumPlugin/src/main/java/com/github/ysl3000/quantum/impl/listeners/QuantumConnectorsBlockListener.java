@@ -2,7 +2,8 @@ package com.github.ysl3000.quantum.impl.listeners;
 
 import com.github.ysl3000.quantum.QuantumConnectors;
 import com.github.ysl3000.quantum.api.receiver.ReceiverState;
-import com.github.ysl3000.quantum.impl.circuits.CircuitManager;
+import com.github.ysl3000.quantum.impl.interfaces.ICircuitActivator;
+import com.github.ysl3000.quantum.impl.interfaces.ICircuitManager;
 import com.github.ysl3000.quantum.impl.utils.MessageLogger;
 import com.github.ysl3000.quantum.impl.utils.SourceBlockUtil;
 import org.bukkit.Bukkit;
@@ -19,11 +20,11 @@ import org.bukkit.event.inventory.FurnaceBurnEvent;
 public class QuantumConnectorsBlockListener implements Listener {
     public static String string;
     private QuantumConnectors plugin;
-    private CircuitManager circuitManager;
+    private ICircuitActivator circuitManager;
     private MessageLogger messageLogger;
     private SourceBlockUtil sourceBlockUtil;
 
-    public QuantumConnectorsBlockListener(final QuantumConnectors plugin, CircuitManager circuitManager, MessageLogger messageLogger, SourceBlockUtil sourceBlockUtil) {
+    public QuantumConnectorsBlockListener(final QuantumConnectors plugin, ICircuitActivator circuitManager, MessageLogger messageLogger, SourceBlockUtil sourceBlockUtil) {
         this.plugin = plugin;
         this.circuitManager = circuitManager;
         this.messageLogger = messageLogger;

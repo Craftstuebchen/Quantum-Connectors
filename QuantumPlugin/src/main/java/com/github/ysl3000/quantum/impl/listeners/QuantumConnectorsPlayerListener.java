@@ -8,6 +8,7 @@ import com.github.ysl3000.quantum.api.receiver.AbstractReceiver;
 import com.github.ysl3000.quantum.api.receiver.ReceiverState;
 import com.github.ysl3000.quantum.api.util.ValidMaterials;
 import com.github.ysl3000.quantum.impl.circuits.CircuitManager;
+import com.github.ysl3000.quantum.impl.interfaces.ICircuitActivator;
 import com.github.ysl3000.quantum.impl.receiver.base.Registry;
 import com.github.ysl3000.quantum.impl.utils.MessageLogger;
 import org.bukkit.ChatColor;
@@ -32,12 +33,12 @@ import java.util.List;
 public class QuantumConnectorsPlayerListener implements Listener {
     private final QuantumConnectors plugin;
 
-    private CircuitManager circuitManager;
+    private ICircuitActivator circuitManager;
     private MessageLogger messageLogger;
     private IQuantumConnectorsAPI api;
     private Registry<AbstractReceiver> receiverRegistry;
 
-    public QuantumConnectorsPlayerListener(QuantumConnectors instance, CircuitManager circuitManager, MessageLogger messageLogger, IQuantumConnectorsAPI api, Registry<AbstractReceiver> receiverRegistry) {
+    public QuantumConnectorsPlayerListener(QuantumConnectors instance, ICircuitActivator circuitManager, MessageLogger messageLogger, IQuantumConnectorsAPI api, Registry<AbstractReceiver> receiverRegistry) {
         this.plugin = instance;
         this.circuitManager = circuitManager;
         this.messageLogger = messageLogger;

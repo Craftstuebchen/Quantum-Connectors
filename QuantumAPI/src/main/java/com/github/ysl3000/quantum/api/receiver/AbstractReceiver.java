@@ -11,6 +11,7 @@ import org.bukkit.block.data.BlockData;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public abstract class AbstractReceiver implements Receiver, IValidMaterials {
 
@@ -91,20 +92,31 @@ public abstract class AbstractReceiver implements Receiver, IValidMaterials {
         return map;
     }
 
-    public <T extends BlockData> void setBlockData(Block block, Class<T> clazz, Consumer<T> consumer){
+    public <T extends BlockData> void setActive(Block block, Class<T> clazz, Consumer<T> consumer) {
+        if (!isValid()) return;
         BlockData blockData = block.getBlockData();
-        if(clazz.isInstance(blockData)){
+        if (clazz.isInstance(blockData)) {
             consumer.accept(clazz.cast(blockData));
         }
         block.setBlockData(blockData);
     }
 
-    public <T extends BlockData> void setBlockData(Block block, Class<T> clazz, Consumer<T> consumer,boolean physics){
+    public <T extends BlockData> void setActive(Block block, Class<T> clazz, Consumer<T> consumer, boolean physics) {
+        if (!isValid()) return;
         BlockData blockData = block.getBlockData();
-        if(clazz.isInstance(blockData)){
+        if (clazz.isInstance(blockData)) {
             consumer.accept(clazz.cast(blockData));
         }
-        block.setBlockData(blockData,physics);
+        block.setBlockData(blockData, physics);
+    }
+
+    public <T extends BlockData> boolean isActive(Block block, Class<T> clazz, Function<T, Boolean> booleanFunction) {
+        if (!isValid()) return false;
+        BlockData blockData = block.getBlockData();
+        if (clazz.isInstance(blockData)) {
+            return booleanFunction.apply(clazz.cast(blockData));
+        }
+        return false;
     }
 
 

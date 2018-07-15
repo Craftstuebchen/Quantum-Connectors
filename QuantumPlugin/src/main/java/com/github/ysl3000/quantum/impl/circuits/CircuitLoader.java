@@ -4,6 +4,7 @@ import com.github.ysl3000.quantum.QuantumConnectors;
 import com.github.ysl3000.quantum.api.IRegistry;
 import com.github.ysl3000.quantum.api.circuit.AbstractCircuit;
 import com.github.ysl3000.quantum.api.circuit.Circuit;
+import com.github.ysl3000.quantum.impl.CircuitContainer;
 import com.github.ysl3000.quantum.impl.interfaces.ICircuitLoader;
 import com.github.ysl3000.quantum.impl.receiver.CompatCircuit;
 import com.github.ysl3000.quantum.impl.utils.MessageLogger;
@@ -25,29 +26,27 @@ import java.util.Map;
 public class CircuitLoader implements ICircuitLoader {
 
     private final IRegistry<AbstractCircuit> circuitIRegistry;
-    private Map<World, Map<Location, AbstractCircuit>> worlds;
     private Map<World, List<Circuit>> invalidCicuitsWorld = new HashMap<>();
-    private CircuitManager circuitManager;
     private QuantumConnectors plugin;
+    private final CircuitContainer circuitContainer;
     private MessageLogger messageLogger;
 
-    public CircuitLoader(QuantumConnectors plugin, Map<World, Map<Location, AbstractCircuit>> worlds, CircuitManager circuitManager, MessageLogger messageLogger, IRegistry<AbstractCircuit> circuitIRegistry) {
+    public CircuitLoader(QuantumConnectors plugin, MessageLogger messageLogger, IRegistry<AbstractCircuit> circuitIRegistry, CircuitContainer circuitContainer) {
         this.plugin = plugin;
-        this.worlds = worlds;
-        this.circuitManager = circuitManager;
+        this.circuitContainer = circuitContainer;
         this.messageLogger = messageLogger;
         this.circuitIRegistry = circuitIRegistry;
     }
 
     public void saveAllWorlds() {
-        for (World world : worlds.keySet()) {
+        for (World world : circuitContainer.getWorlds()) {
             saveWorld(world);
         }
         //huh, that was easy.
     }
 
     public void saveWorld(World world) {
-        if (worlds.containsKey(world)) {
+        if (circuitContainer.hasCircuits(world)) {
             //Alright let's do this!
             File ymlFile = new File(plugin.getDataFolder(), world.getName() + ".circuits.yml");
             if (!ymlFile.exists()) {
@@ -62,7 +61,7 @@ public class CircuitLoader implements ICircuitLoader {
             if (QuantumConnectors.VERBOSE_LOGGING)
                 messageLogger.log(messageLogger.getMessage("saving").replace("%file", ymlFile.getName()));
 
-            Map<Location, AbstractCircuit> currentWorldCircuits = worlds.get(world);
+            Map<Location, AbstractCircuit> currentWorldCircuits = circuitContainer.getCircuitsForWorld(world);
             List<Circuit> currentInvalidCircuits = invalidCicuitsWorld.get(world);
 
             List<Map<String, Object>> mapList = new ArrayList<>();
@@ -99,8 +98,8 @@ public class CircuitLoader implements ICircuitLoader {
 
     public void loadWorld(World world) {
         //at least create a blank holder
-        Map<Location, AbstractCircuit> worldCircuits = new HashMap<>();
-        worlds.put(world, worldCircuits);
+
+
         List<Circuit> invalidCircuits = new ArrayList<>();
         invalidCicuitsWorld.put(world, invalidCircuits);
 
@@ -147,15 +146,14 @@ public class CircuitLoader implements ICircuitLoader {
                 AbstractCircuit receiver = circuitConstructor.newInstance(tempCircuitMap);
 
                 if (receiver.isValid()) {
-                    worldCircuits.put(receiver.getLocation(), receiver);
+                    circuitContainer.addCircuit(receiver);
                 }
 
             } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
                 System.out.println(e.getMessage());
-                continue;
             }
         }
-        System.out.println("Debug: Anzahl der geladenene Schaltungen in Welt " + world.getName() + ": " + worldCircuits.size());
+        System.out.println("Debug: Anzahl der geladenene Schaltungen in Welt " + world.getName() + ": " + circuitContainer.getCircuitCount(world));
 
     }
 }

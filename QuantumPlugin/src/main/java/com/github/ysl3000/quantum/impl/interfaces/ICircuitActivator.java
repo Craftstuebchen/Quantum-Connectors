@@ -34,8 +34,4 @@ public interface ICircuitActivator extends ICircuitManager{
     //Circuit Types
     boolean isValidCircuitType(String type);
 
-    ICircuitLoader getCircuitLoader();
-
-
-
 }

@@ -22,7 +22,7 @@ public class QuantumMap<T> {
         }
 
         if (materialMap.get(material).add(receiver))
-            System.out.println("[QUANTUM]  Registered receiver with material: " + material + "  " + receiver.getSimpleName());
+            System.out.println("[QUANTUM]  Registered: " + material + "  " + receiver.getSimpleName());
 
         return receiver;
     }

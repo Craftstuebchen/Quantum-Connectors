@@ -3,8 +3,10 @@ package com.github.ysl3000.quantum;
 import com.github.ysl3000.quantum.api.QuantumConnectorsAPI;
 import com.github.ysl3000.quantum.api.circuit.AbstractCircuit;
 import com.github.ysl3000.quantum.api.receiver.AbstractReceiver;
+import com.github.ysl3000.quantum.impl.CircuitContainer;
 import com.github.ysl3000.quantum.impl.QuantumConnectorsAPIImplementation;
 import com.github.ysl3000.quantum.impl.QuantumConnectorsCommandExecutor;
+import com.github.ysl3000.quantum.impl.circuits.CircuitLoader;
 import com.github.ysl3000.quantum.impl.circuits.CircuitManager;
 import com.github.ysl3000.quantum.impl.extension.QuantumExtensionLoader;
 import com.github.ysl3000.quantum.impl.interfaces.ICircuitActivator;
@@ -56,7 +58,7 @@ public class QuantumConnectors extends JavaPlugin {
     private Runnable autosaveCircuits = new Runnable() {
         @Override
         public void run() {
-            circuitManager.getCircuitLoader().saveAllWorlds();
+            circuitLoader.saveAllWorlds();
         }
     };
 
@@ -66,11 +68,13 @@ public class QuantumConnectors extends JavaPlugin {
     private ClassRegistry classRegistry;
     private IQSWorld IQSWorld;
     private VariantWrapper variantWrapper;
+    private CircuitLoader circuitLoader;
+    private CircuitContainer circuitContainer;
 
     @Override
     public void onDisable() {
         if (circuitManager != null) {
-            circuitManager.getCircuitLoader().saveAllWorlds();
+            circuitLoader.saveAllWorlds();
         }
 
         this.loader.disable();
@@ -92,7 +96,11 @@ public class QuantumConnectors extends JavaPlugin {
         this.receiverRegistry = new Registry<>();
         this.circuitRegistry = new Registry<>();
 
-        this.circuitManager = new CircuitManager(messageLogger, this, this.circuitRegistry, this.receiverRegistry);
+        this.circuitContainer = new CircuitContainer();
+
+        this.circuitLoader = new CircuitLoader(this, messageLogger, this.circuitRegistry, circuitContainer);
+
+        this.circuitManager = new CircuitManager(messageLogger, this, this.circuitRegistry, this.receiverRegistry, circuitContainer);
 
         this.sourceBlockUtil = new SourceBlockUtil();
         this.classRegistry = new ClassRegistry();
@@ -110,10 +118,10 @@ public class QuantumConnectors extends JavaPlugin {
         this.loader = new QuantumExtensionLoader(api, messageLogger, this.extensionDir);
 
         this.loader.load();
-        this.loader.enable();
+        this.loader.enable(() -> circuitLoader.loadWorlds());
 
 
-        this.worldListener = new QuantumConnectorsWorldListener(this.circuitManager.getCircuitLoader());
+        this.worldListener = new QuantumConnectorsWorldListener(this.circuitLoader);
         this.blockListener = new QuantumConnectorsBlockListener(this, circuitManager, messageLogger, sourceBlockUtil);
         this.playerListener = new QuantumConnectorsPlayerListener(this, circuitManager, messageLogger, api, receiverRegistry);
 

@@ -12,6 +12,9 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.zip.ZipFile;
 
@@ -69,7 +72,14 @@ public class QuantumExtensionLoader {
         }
     }
 
-    public void enable() {
+    @FunctionalInterface
+    public static interface CallBack{
+        void call();
+    }
+
+
+
+    public void enable(CallBack onFinish) {
         for (Class<?> clazz : quantumExtensionsClass) {
 
             try {
@@ -87,6 +97,8 @@ public class QuantumExtensionLoader {
                 e.printStackTrace();
             }
         }
+
+        onFinish.call();
     }
 
     public void disable() {

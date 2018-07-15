@@ -5,9 +5,12 @@ import com.github.ysl3000.quantum.api.IValidMaterials;
 import com.github.ysl3000.quantum.api.QuantumConnectorsAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public abstract class AbstractReceiver implements Receiver, IValidMaterials {
 
@@ -87,4 +90,22 @@ public abstract class AbstractReceiver implements Receiver, IValidMaterials {
         map.put("type", getType());
         return map;
     }
+
+    public <T extends BlockData> void setBlockData(Block block, Class<T> clazz, Consumer<T> consumer){
+        BlockData blockData = block.getBlockData();
+        if(clazz.isInstance(blockData)){
+            consumer.accept(clazz.cast(blockData));
+        }
+        block.setBlockData(blockData);
+    }
+
+    public <T extends BlockData> void setBlockData(Block block, Class<T> clazz, Consumer<T> consumer,boolean physics){
+        BlockData blockData = block.getBlockData();
+        if(clazz.isInstance(blockData)){
+            consumer.accept(clazz.cast(blockData));
+        }
+        block.setBlockData(blockData,physics);
+    }
+
+
 }

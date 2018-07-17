@@ -6,6 +6,7 @@ import com.github.ysl3000.quantum.api.QuantumConnectorsAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 
 import java.util.HashMap;
@@ -119,5 +120,14 @@ public abstract class AbstractReceiver implements Receiver, IValidMaterials {
         return false;
     }
 
+
+    public <T extends BlockState> void setState(Block block, Class<T> clazz, Consumer<T> consumer) {
+        if (!isValid()) return;
+        BlockState blockState = block.getState();
+        if (clazz.isInstance(blockState)) {
+            consumer.accept(clazz.cast(blockState));
+        }
+        blockState.update(true, true);
+    }
 
 }

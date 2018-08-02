@@ -1,8 +1,13 @@
 package com.github.ysl3000.quantum.impl.receiver.base;
 
-import org.bukkit.Material;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import java.util.*;
+import org.bukkit.Material;
 
 public class QuantumMap<T> {
 
@@ -20,9 +25,7 @@ public class QuantumMap<T> {
         if (!materialMap.containsKey(material)) {
             materialMap.put(material, new ArrayList<>());
         }
-
-        if (materialMap.get(material).add(receiver))
-            System.out.println("[QUANTUM]  Registered: " + material + "  " + receiver.getSimpleName());
+        materialMap.get(material).add(receiver);
 
         return receiver;
     }

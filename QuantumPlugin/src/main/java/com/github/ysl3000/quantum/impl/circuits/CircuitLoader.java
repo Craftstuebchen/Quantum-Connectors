@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CircuitLoader implements ICircuitLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(CircuitLoader.class);
@@ -31,7 +32,7 @@ public class CircuitLoader implements ICircuitLoader {
 
     private final IRegistry<AbstractCircuit> circuitIRegistry;
     private final CircuitContainer circuitContainer;
-    private Map<World, List<Circuit>> invalidCicuitsWorld = new HashMap<>();
+    private Map<String, List<Circuit>> invalidCicuitsWorld = new HashMap<>();
     private QuantumConnectors plugin;
     private MessageLogger messageLogger;
 
@@ -43,21 +44,21 @@ public class CircuitLoader implements ICircuitLoader {
     }
 
     public void saveAllWorlds() {
-        for (World world : circuitContainer.getWorlds()) {
+        for (String world : circuitContainer.getWorlds()) {
             saveWorld(world);
         }
     }
 
-    public void saveWorld(World world) {
-        if (circuitContainer.hasCircuits(world)) {
+    public void saveWorld(String worldName) {
+        if (circuitContainer.hasCircuits(worldName)) {
             //Alright let's do this!
-            File ymlFile = getFile(world);
+            File ymlFile = getFile(worldName);
             FileConfiguration yml = YamlConfiguration.loadConfiguration(ymlFile);
 
             messageLogger.verbose(messageLogger.getMessage("saving").replace("%file", ymlFile.getName()));
 
-            Map<Location, AbstractCircuit> currentWorldCircuits = circuitContainer.getCircuitsForWorld(world);
-            List<Circuit> currentInvalidCircuits = invalidCicuitsWorld.get(world);
+            Map<Location, AbstractCircuit> currentWorldCircuits = circuitContainer.getCircuitsForWorld(worldName);
+            List<Circuit> currentInvalidCircuits = invalidCicuitsWorld.get(worldName);
 
             List<Map<String, Object>> mapList = new ArrayList<>();
 
@@ -76,28 +77,28 @@ public class CircuitLoader implements ICircuitLoader {
 
                 messageLogger.verbose(messageLogger.getMessage("saved").replace("%file", ymlFile.getName()));
             } catch (IOException e) {
-                messageLogger.error(messageLogger.getMessage("save_failed").replace("%world", world.getName()));
+                messageLogger.error(messageLogger.getMessage("save_failed").replace("%world", worldName));
             }
         } else {
-            messageLogger.error(messageLogger.getMessage("save_failed").replace("%world", world.getName()));
+            messageLogger.error(messageLogger.getMessage("save_failed").replace("%world", worldName));
         }
     }
 
     @Override
     public void loadWorlds() {
-        for (World world : Bukkit.getWorlds()) {
-            loadWorld(world);
+        for (String worldName : Bukkit.getWorlds().stream().map(World::getName).collect(Collectors.toSet())) {
+            loadWorld(worldName);
         }
     }
 
-    public void loadWorld(World world) {
+    public void loadWorld(String worldName) {
         //at least create a blank holder
 
 
         List<Circuit> invalidCircuits = new ArrayList<>();
-        invalidCicuitsWorld.put(world, invalidCircuits);
+        invalidCicuitsWorld.put(worldName, invalidCircuits);
 
-        File ymlFile = new File(plugin.getDataFolder(), world.getName() + ".circuits.yml");
+        File ymlFile = new File(plugin.getDataFolder(), worldName + ".circuits.yml");
 
         messageLogger.verbose(messageLogger.getMessage("loading").replace(FILE, ymlFile.getName()));
 
@@ -118,7 +119,7 @@ public class CircuitLoader implements ICircuitLoader {
 
         loadCircuits(tempCircuits, invalidCircuits);
 
-        LOGGER.debug("Debug: Anzahl der geladenene Schaltungen in Welt {}: {}", world.getName(), circuitContainer.getCircuitCount(world));
+        LOGGER.debug("Debug: Anzahl der geladenene Schaltungen in Welt {}: {}", worldName, circuitContainer.getCircuitCount(worldName));
 
     }
 
@@ -154,8 +155,8 @@ public class CircuitLoader implements ICircuitLoader {
         }
     }
 
-    private File getFile(World world) {
-        File ymlFile = new File(plugin.getDataFolder(), world.getName() + ".circuits.yml");
+    private File getFile(String worldName) {
+        File ymlFile = new File(plugin.getDataFolder(), worldName + ".circuits.yml");
         if (!ymlFile.exists()) {
             try {
                 if (!ymlFile.createNewFile()) {

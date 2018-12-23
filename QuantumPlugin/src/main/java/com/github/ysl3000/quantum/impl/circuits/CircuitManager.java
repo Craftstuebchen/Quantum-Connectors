@@ -116,7 +116,7 @@ public final class CircuitManager implements ICircuitActivator {
 
     @Override
     public Set<Location> circuitLocations(World w) {
-        return circuitContainer.circuitLocations(w);
+        return circuitContainer.circuitLocations(w.getName());
     }
 
     @Override
@@ -130,23 +130,23 @@ public final class CircuitManager implements ICircuitActivator {
         if (constructor == null) return null;
 
         AbstractCircuit pc = constructor.newInstance(player.getUniqueId(), delay);
-        circuitContainer.addPendingCircuit(player, pc);
+        circuitContainer.addPendingCircuit(player.getUniqueId(), pc);
         return pc;
     }
 
     @Override
     public AbstractCircuit getPendingCircuit(Player player) {
-        return circuitContainer.getPendingCircuit(player);
+        return circuitContainer.getPendingCircuit(player.getUniqueId());
     }
 
     @Override
     public boolean hasPendingCircuit(Player player) {
-        return circuitContainer.hasPendingCircuit(player);
+        return circuitContainer.hasPendingCircuit(player.getUniqueId());
     }
 
     @Override
     public void removePendingCircuit(Player player) {
-        circuitContainer.removePendingCircuit(player);
+        circuitContainer.removePendingCircuit(player.getUniqueId());
     }
 
 }

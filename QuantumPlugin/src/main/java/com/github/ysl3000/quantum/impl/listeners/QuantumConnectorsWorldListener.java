@@ -16,11 +16,11 @@ public class QuantumConnectorsWorldListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onWorldLoad(WorldLoadEvent event) {
-        circuitLoader.loadWorld(event.getWorld());
+        circuitLoader.loadWorld(event.getWorld().getName());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onWorldUnload(WorldUnloadEvent event) {
-        circuitLoader.saveWorld(event.getWorld());
+        circuitLoader.saveWorld(event.getWorld().getName());
     }
 }

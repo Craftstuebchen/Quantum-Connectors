@@ -41,7 +41,32 @@
             <version>2.11.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>2.0.2-beta</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.seeseemelk</groupId>
+            <artifactId>MockBukkit</artifactId>
+            <version>v1.13-88dd8473ca-1</version>
+            <scope>test</scope>
+        </dependency>
+
+
+
+
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jitpack</id>
+            <url>https://jitpack.io</url>
+        </repository>
+
+    </repositories>
 
 
     <build>

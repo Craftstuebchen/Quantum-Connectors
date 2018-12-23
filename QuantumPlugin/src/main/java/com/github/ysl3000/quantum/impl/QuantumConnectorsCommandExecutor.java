@@ -4,6 +4,8 @@ import com.github.ysl3000.quantum.QuantumConnectors;
 import com.github.ysl3000.quantum.api.circuit.AbstractCircuit;
 import com.github.ysl3000.quantum.api.receiver.AbstractReceiver;
 import com.github.ysl3000.quantum.api.receiver.CompatReceiver;
+import com.github.ysl3000.quantum.impl.commands.AbstractCommand;
+import com.github.ysl3000.quantum.impl.commands.Help;
 import com.github.ysl3000.quantum.impl.interfaces.ICircuitActivator;
 import com.github.ysl3000.quantum.impl.utils.MessageLogger;
 import org.bukkit.ChatColor;
@@ -11,28 +13,41 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class QuantumConnectorsCommandExecutor implements CommandExecutor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(QuantumConnectorsCommandExecutor.class);
+    private static final Pattern NUMBER = Pattern.compile("\\d+");
+    private static final String CIRCUIT = "%circuit%";
+
     private QuantumConnectors plugin;
     private ICircuitActivator circuitManager;
     private MessageLogger messageLogger;
+
+    private AbstractCommand abstractCommand = new AbstractCommand();
 
     public QuantumConnectorsCommandExecutor(QuantumConnectors plugin, ICircuitActivator circuitManager, MessageLogger messageLogger) {
         this.plugin = plugin;
         this.circuitManager = circuitManager;
         this.messageLogger = messageLogger;
 
+        abstractCommand.registerCommand(new Help(messageLogger,circuitManager));
+
     }
 
     @Override
     public boolean onCommand(CommandSender cs, Command cmd, String alias, String[] args) {
+
+        boolean success = abstractCommand.onCommand(cs,args);
+
         if (!(cs instanceof Player)) {
             messageLogger.log(messageLogger.getMessage("console_not_allowed"));
-
             return true;
         }
 
@@ -46,16 +61,13 @@ public class QuantumConnectorsCommandExecutor implements CommandExecutor {
         Player player = (Player) cs;
 
 // Command was: "/qc"
-        if (args.length == 0 || args[0].equalsIgnoreCase("?")) {
-            messageLogger.msg(player, messageLogger.getMessage("usage"));
+        // todo map help
 
-            messageLogger.msg(player, ChatColor.YELLOW +
-                    messageLogger.getMessage("available_circuits") + ChatColor.WHITE +
-                    circuitManager.getValidSendersAsString());
-        }
+
+
 
 // Command was: "/qc cancel" or "/qc abort"
-        else if (args[0].equalsIgnoreCase("cancel") || args[0].equalsIgnoreCase("c") || args[0].equalsIgnoreCase("abort")) {
+         if (args[0].equalsIgnoreCase("cancel") || args[0].equalsIgnoreCase("c") || args[0].equalsIgnoreCase("abort")) {
 
             //Pending circuit exists
             if (circuitManager.hasPendingCircuit(player)) {
@@ -86,7 +98,7 @@ public class QuantumConnectorsCommandExecutor implements CommandExecutor {
                         circuitManager.removePendingCircuit(player);
 
                         messageLogger.msg(player, messageLogger.getMessage("circuit_created")
-                                .replace("%circuit%", pc.getType()));
+                                .replace(CIRCUIT, pc.getType()));
                     }
                     //They have not setup at least one receiver
                     else {
@@ -113,23 +125,22 @@ public class QuantumConnectorsCommandExecutor implements CommandExecutor {
                 int delay = 0;
 
                 if (args.length > 1) {
-                    try {
+
+
+                    if(NUMBER.matcher(args[1]).matches()){
                         delay = Integer.valueOf(args[1]);
-                    } catch (NumberFormatException e) {
                     }
 
+
                     if (delay < 0
-                            || (delay > QuantumConnectors.MAX_DELAY_TIME && !player.hasPermission("QuantumConnectors.ignoreLimits"))) {
+                            || (delay > plugin.getMaxDelayTime() && !player.hasPermission("QuantumConnectors.ignoreLimits"))) {
                         delay = 0;
 
                         messageLogger.msg(player, ChatColor.RED +
                                 messageLogger.getMessage("invalid_delay").
-                                        replaceAll("%maxdelay%", Integer.toString(QuantumConnectors.MAX_DELAY_TIME)));
+                                        replaceAll("%maxdelay%", Integer.toString(plugin.getMaxDelayTime())));
                     }
                 }
-
-                String sDelayMsg = " (" + args[0] + " " + delay + "s delay)";
-
 
                 AbstractCircuit pendingCircuit = null;
 
@@ -160,17 +171,18 @@ public class QuantumConnectorsCommandExecutor implements CommandExecutor {
                     abstractCircuit.addInvalidReceiver(invalidReceiver);
 
                 } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-                    e.printStackTrace();
+                    LOGGER.error("Circuit couldn't be initialized.", e);
+
                 } finally {
 
                     if (pendingCircuit == null) {
 
                         messageLogger.msg(player, messageLogger.getMessage("circuit_ready")
-                                .replace("%circuit%", args[0].toUpperCase())
+                                .replace(CIRCUIT, args[0].toUpperCase())
                                 .replace("%delay%", Integer.toString(delay)));
                     } else {
                         messageLogger.msg(player, messageLogger.getMessage("circuit_changed")
-                                .replace("%circuit%", args[0].toUpperCase())
+                                .replace(CIRCUIT, args[0].toUpperCase())
                                 .replace("%delay%", Long.toString(delay)));
                     }
                 }

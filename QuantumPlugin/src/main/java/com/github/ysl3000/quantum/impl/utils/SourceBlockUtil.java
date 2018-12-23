@@ -3,11 +3,13 @@ package com.github.ysl3000.quantum.impl.utils;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Bed;
+import org.bukkit.block.data.type.Door;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.material.Bed;
-import org.bukkit.material.Door;
-import org.bukkit.material.MaterialData;
+
 
 /**
  * Created by Yannick on 21.01.2017.
@@ -17,15 +19,15 @@ public class SourceBlockUtil {
     public Location getSourceBlock(Location location) {
 
         Block block = location.getBlock();
-        MaterialData materialData = block.getState().getData();
-        if (materialData instanceof Door) {
-            Door door = (Door) materialData;
-            if (door.isTopHalf()) {
+        BlockData blockData = block.getState().getBlockData();
+        if (blockData instanceof Door) {
+            Door door = (Door) blockData;
+            if (door.getHalf()== Bisected.Half.TOP) {
                 return location.add(0, -1, 0);
             }
-        } else if (materialData instanceof Bed) {
-            Bed bed = (Bed) materialData;
-            if (bed.isHeadOfBed()) {
+        } else if (blockData instanceof Bed) {
+            Bed bed = (Bed) blockData;
+            if (bed.getPart()== Bed.Part.HEAD) {
                 return block.getRelative(bed.getFacing().getOppositeFace()).getLocation();
             }
         } else if (block.getState() instanceof Chest) {

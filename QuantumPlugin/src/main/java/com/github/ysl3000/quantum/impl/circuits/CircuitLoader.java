@@ -13,6 +13,8 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,11 +26,13 @@ import java.util.List;
 import java.util.Map;
 
 public class CircuitLoader implements ICircuitLoader {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CircuitLoader.class);
+    private static final String FILE = "%file%";
 
     private final IRegistry<AbstractCircuit> circuitIRegistry;
+    private final CircuitContainer circuitContainer;
     private Map<World, List<Circuit>> invalidCicuitsWorld = new HashMap<>();
     private QuantumConnectors plugin;
-    private final CircuitContainer circuitContainer;
     private MessageLogger messageLogger;
 
     public CircuitLoader(QuantumConnectors plugin, MessageLogger messageLogger, IRegistry<AbstractCircuit> circuitIRegistry, CircuitContainer circuitContainer) {
@@ -42,24 +46,15 @@ public class CircuitLoader implements ICircuitLoader {
         for (World world : circuitContainer.getWorlds()) {
             saveWorld(world);
         }
-        //huh, that was easy.
     }
 
     public void saveWorld(World world) {
         if (circuitContainer.hasCircuits(world)) {
             //Alright let's do this!
-            File ymlFile = new File(plugin.getDataFolder(), world.getName() + ".circuits.yml");
-            if (!ymlFile.exists()) {
-                try {
-                    ymlFile.createNewFile();
-                } catch (IOException ex) {
-                    messageLogger.error("Could not create " + ymlFile.getName());
-                }
-            }
+            File ymlFile = getFile(world);
             FileConfiguration yml = YamlConfiguration.loadConfiguration(ymlFile);
 
-            if (QuantumConnectors.VERBOSE_LOGGING)
-                messageLogger.log(messageLogger.getMessage("saving").replace("%file", ymlFile.getName()));
+            messageLogger.verbose(messageLogger.getMessage("saving").replace("%file", ymlFile.getName()));
 
             Map<Location, AbstractCircuit> currentWorldCircuits = circuitContainer.getCircuitsForWorld(world);
             List<Circuit> currentInvalidCircuits = invalidCicuitsWorld.get(world);
@@ -79,9 +74,8 @@ public class CircuitLoader implements ICircuitLoader {
             try {
                 yml.save(ymlFile);
 
-                if (QuantumConnectors.VERBOSE_LOGGING)
-                    messageLogger.log(messageLogger.getMessage("saved").replace("%file", ymlFile.getName()));
-            } catch (IOException IO) {
+                messageLogger.verbose(messageLogger.getMessage("saved").replace("%file", ymlFile.getName()));
+            } catch (IOException e) {
                 messageLogger.error(messageLogger.getMessage("save_failed").replace("%world", world.getName()));
             }
         } else {
@@ -105,12 +99,10 @@ public class CircuitLoader implements ICircuitLoader {
 
         File ymlFile = new File(plugin.getDataFolder(), world.getName() + ".circuits.yml");
 
-        if (QuantumConnectors.VERBOSE_LOGGING)
-            messageLogger.log(messageLogger.getMessage("loading").replace("%file%", ymlFile.getName()));
+        messageLogger.verbose(messageLogger.getMessage("loading").replace(FILE, ymlFile.getName()));
 
         if (!ymlFile.exists()) {
-            if (QuantumConnectors.VERBOSE_LOGGING)
-                messageLogger.error(messageLogger.getMessage("loading_not_found").replace("%file%", ymlFile.getName()));
+            messageLogger.verboseError(messageLogger.getMessage("loading_not_found").replace(FILE, ymlFile.getName()));
             return;
         }
 
@@ -119,11 +111,18 @@ public class CircuitLoader implements ICircuitLoader {
         List<Map<?, ?>> tempCircuits = yml.getMapList("circuits");
 
 
-        if (tempCircuits.size() == 0) {
-            messageLogger.log(messageLogger.getMessage("loading_no_circuits").replace("%file%", ymlFile.getName()));
+        if (tempCircuits.isEmpty()) {
+            messageLogger.log(messageLogger.getMessage("loading_no_circuits").replace(FILE, ymlFile.getName()));
             return;
         }
 
+        loadCircuits(tempCircuits, invalidCircuits);
+
+        LOGGER.debug("Debug: Anzahl der geladenene Schaltungen in Welt {}: {}", world.getName(), circuitContainer.getCircuitCount(world));
+
+    }
+
+    private void loadCircuits(List<Map<?, ?>> tempCircuits, List<Circuit> invalidCircuits) {
 
         for (Map<?, ?> tempCircuitObj : tempCircuits) {
 
@@ -139,7 +138,7 @@ public class CircuitLoader implements ICircuitLoader {
                     Circuit circuit = new CompatCircuit((HashMap<String, Object>) tempCircuitMap);
                     invalidCircuits.add(circuit);
 
-                    System.out.println("There is no receiver registered with this type: " + circuitType);
+                    LOGGER.info("There is no receiver registered with this type: {}", circuitType);
                     continue;
                 }
 
@@ -150,10 +149,22 @@ public class CircuitLoader implements ICircuitLoader {
                 }
 
             } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-                System.out.println(e.getMessage());
+                LOGGER.error("Circuit loading failed.", e);
             }
         }
-        System.out.println("Debug: Anzahl der geladenene Schaltungen in Welt " + world.getName() + ": " + circuitContainer.getCircuitCount(world));
+    }
 
+    private File getFile(World world) {
+        File ymlFile = new File(plugin.getDataFolder(), world.getName() + ".circuits.yml");
+        if (!ymlFile.exists()) {
+            try {
+                if (!ymlFile.createNewFile()) {
+                    LOGGER.error("Could not create {}", ymlFile.getName());
+                }
+            } catch (IOException ex) {
+                LOGGER.error("Could not access {}", ymlFile.getName());
+            }
+        }
+        return ymlFile;
     }
 }

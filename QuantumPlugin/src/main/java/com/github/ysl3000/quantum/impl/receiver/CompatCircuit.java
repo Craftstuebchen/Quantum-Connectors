@@ -7,25 +7,28 @@ import com.github.ysl3000.quantum.api.receiver.Receiver;
 import org.bukkit.Location;
 import org.bukkit.Material;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by Yannick on 24.01.2017.
  */
 public final class CompatCircuit implements Circuit {
 
-    private HashMap<String, Object> circuit;
+    private Map<String, Object> circuit;
 
 
-    public CompatCircuit(HashMap<String, Object> map) {
+    public CompatCircuit(Map<String, Object> map) {
         this.circuit = map;
     }
 
 
     @Override
     public List<Material> getValidMaterials() {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
@@ -39,28 +42,28 @@ public final class CompatCircuit implements Circuit {
     }
 
     @Override
-    public void addReceiver(Class<? extends AbstractReceiver> receiverClass, Location loc, int delay) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-
+    public void addReceiver(Class<? extends AbstractReceiver> receiverClass, Location loc, int delay) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void addReceiver(AbstractReceiver receiver) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void addReceiver(Collection<AbstractReceiver> receivers) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void addReceiver(AbstractReceiver... receivers) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public List<AbstractReceiver> getReceivers() {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
@@ -70,7 +73,7 @@ public final class CompatCircuit implements Circuit {
 
     @Override
     public List<CompatReceiver> getInValidReceivers() {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
@@ -85,12 +88,12 @@ public final class CompatCircuit implements Circuit {
 
     @Override
     public void delReceiver(Receiver r) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void delReceiver(Location location) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -105,7 +108,7 @@ public final class CompatCircuit implements Circuit {
 
     @Override
     public void setOwner(UUID playerUUID) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -125,7 +128,7 @@ public final class CompatCircuit implements Circuit {
 
     @Override
     public void setLocation(Location location) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -135,15 +138,16 @@ public final class CompatCircuit implements Circuit {
 
     @Override
     public void setDelay(int delay) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void calculate(Receiver receiver, int oldCurrent, int newCurrent) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void actvate(int oldCurrent, int newCurrent, int chain) {
-
+        throw new UnsupportedOperationException();
     }
 }

@@ -8,7 +8,6 @@ import com.github.ysl3000.quantum.api.receiver.AbstractReceiver;
 import com.github.ysl3000.quantum.impl.CircuitContainer;
 import com.github.ysl3000.quantum.impl.interfaces.ICircuitActivator;
 import com.github.ysl3000.quantum.impl.receiver.base.DelayedCircuit;
-import com.github.ysl3000.quantum.impl.utils.MessageLogger;
 import com.github.ysl3000.quantum.impl.utils.Normalizer;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -23,18 +22,19 @@ import java.util.UUID;
 
 public final class CircuitManager implements ICircuitActivator {
 
-    private MessageLogger messageLogger;
     private CircuitContainer circuitContainer;
     private QuantumConnectors plugin;
     private IRegistry<AbstractCircuit> circuitIRegistry;
     private IRegistry<AbstractReceiver> receiverIRegistry;
 
-    public CircuitManager(MessageLogger messageLogger, final QuantumConnectors qc, IRegistry<AbstractCircuit> circuitIRegistry, IRegistry<AbstractReceiver> receiverIRegistry, CircuitContainer circuitContainer) {
-        this.messageLogger = messageLogger;
+    private Normalizer normalizer;
+
+    public CircuitManager(QuantumConnectors qc, IRegistry<AbstractCircuit> circuitIRegistry, IRegistry<AbstractReceiver> receiverIRegistry, CircuitContainer circuitContainer) {
         this.plugin = qc;
         this.circuitIRegistry = circuitIRegistry;
         this.receiverIRegistry = receiverIRegistry;
         this.circuitContainer = circuitContainer;
+        normalizer = Normalizer.NORMALIZER;
     }
 
     @Override
@@ -58,13 +58,35 @@ public final class CircuitManager implements ICircuitActivator {
     }
 
     @Override
+    public void activateCircuit(Location lSender, int oldCurrent, int newCurrent) {
+        activateCircuit(lSender, oldCurrent, newCurrent, 0);
+    }
+
+    @Override
+    public void activateCircuit(Location lSender, int oldCurrent, int newCurrent, int chain) {
+        AbstractCircuit circuit = getCircuit(lSender);
+
+        if (circuit.getDelay() > 0) {
+            new DelayedCircuit(plugin, circuit).actvate(oldCurrent, newCurrent, chain);
+        } else {
+            circuit.actvate(oldCurrent, newCurrent, chain);
+        }
+    }
+
+    //Circuit Types
+    @Override
+    public boolean isValidCircuitType(String type) {
+        return circuitIRegistry.getFromUniqueKey(type) != null;
+    }
+
+    @Override
     public String getValidSendersMaterialsAsString() {
         return getValidString(circuitIRegistry.getMaterials());
     }
 
     @Override
     public String getValidString(Set<Material> materials) {
-        return String.join(", ", Normalizer.normalizeEnumNames(materials, Normalizer.NORMALIZER));
+        return String.join(", ", normalizer.normalizeEnumNames(materials, normalizer.materialNormalizer));
     }
 
     @Override
@@ -87,28 +109,14 @@ public final class CircuitManager implements ICircuitActivator {
         return circuitContainer.circuitExists(circuitLocation);
     }
 
-    // TODO: 23.01.2017 try to remove magic numbers
-    // Circuit activation
-    @Override
-    public void activateCircuit(Location lSender, int oldCurrent, int newCurrent) {
-        activateCircuit(lSender, oldCurrent, newCurrent, 0);
-    }
-
-    // TODO: 23.01.2017 try to remove magic numbers
-    @Override
-    public void activateCircuit(Location lSender, int oldCurrent, int newCurrent, int chain) {
-        AbstractCircuit circuit = getCircuit(lSender);
-
-        if (circuit.getDelay() > 0) {
-            new DelayedCircuit(plugin, circuit).actvate(oldCurrent, newCurrent, chain);
-        } else {
-            circuit.actvate(oldCurrent, newCurrent, chain);
-        }
-    }
-
     @Override
     public AbstractCircuit getCircuit(Location circuitLocation) {
         return circuitContainer.getCircuit(circuitLocation);
+    }
+
+    @Override
+    public Set<Location> circuitLocations(World w) {
+        return circuitContainer.circuitLocations(w);
     }
 
     @Override
@@ -139,17 +147,6 @@ public final class CircuitManager implements ICircuitActivator {
     @Override
     public void removePendingCircuit(Player player) {
         circuitContainer.removePendingCircuit(player);
-    }
-
-    //Circuit Types
-    @Override
-    public boolean isValidCircuitType(String type) {
-        return circuitIRegistry.getFromUniqueKey(type) != null;
-    }
-
-    @Override
-    public Set<Location> circuitLocations(World w) {
-        return circuitContainer.circuitLocations(w);
     }
 
 }

@@ -6,6 +6,11 @@ addons:
   apt:
     packages:
     - oracle-java8-installer
+stages:
+  - compile
+  - test
+  - sonar
+  - deploy
 deploy:
   provider: releases
   file:

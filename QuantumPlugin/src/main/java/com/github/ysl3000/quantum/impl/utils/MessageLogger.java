@@ -15,6 +15,7 @@ public class MessageLogger {
 
     private Map<String, String> messages;
     private Logger logger;
+    private boolean verbose;
 
     public MessageLogger(Logger logger, Map<String, String> messages) {
         this.logger = logger;
@@ -23,6 +24,14 @@ public class MessageLogger {
 
     public void msg(Player player, String sMessage) {
         player.sendMessage(ChatColor.LIGHT_PURPLE + "[QC] " + ChatColor.WHITE + sMessage);
+    }
+
+    public void verbose(String message) {
+        if (isVerbose()) log(message);
+    }
+
+    public boolean isVerbose() {
+        return verbose;
     }
 
     public void log(String sMessage) {
@@ -35,12 +44,20 @@ public class MessageLogger {
             logger.log(level, sMessage);
     }
 
-    public void error(String sMessage) {
-        log(Level.WARNING, sMessage);
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     //Wrapper for getting localized messages
     public String getMessage(String sMessageName) {
         return (messages.get(sMessageName));
+    }
+
+    public void verboseError(String message) {
+        if (isVerbose()) error(message);
+    }
+
+    public void error(String sMessage) {
+        log(Level.WARNING, sMessage);
     }
 }

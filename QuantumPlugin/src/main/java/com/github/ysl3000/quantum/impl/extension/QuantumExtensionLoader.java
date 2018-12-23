@@ -4,17 +4,21 @@ import com.github.ysl3000.quantum.api.IQuantumConnectorsAPI;
 import com.github.ysl3000.quantum.api.QuantumExtension;
 import com.github.ysl3000.quantum.impl.utils.MessageLogger;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.zip.ZipFile;
 
@@ -22,6 +26,8 @@ import java.util.zip.ZipFile;
  * Created by Yannick on 23.01.2017.
  */
 public class QuantumExtensionLoader {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(QuantumExtensionLoader.class);
 
     private final IQuantumConnectorsAPI api;
     private final MessageLogger messageLogger;
@@ -42,27 +48,17 @@ public class QuantumExtensionLoader {
 
             File[] files = file.listFiles((dir, name) -> name.endsWith(".jar"));
 
-            for (File jar : files) {
-                String mainClass = null;
-                try {
-                    ZipFile zipFile = new ZipFile(jar);
-
+            for (File jar : Objects.requireNonNull(files)) {
+                String mainClass;
+                try (ZipFile zipFile = new ZipFile(jar)) {
                     InputStream is = zipFile.getInputStream(zipFile.getEntry("extension.yml"));
 
                     YamlConfiguration config = YamlConfiguration.loadConfiguration(new InputStreamReader(is));
                     mainClass = config.getString("main");
-
-                    ClassLoader l = URLClassLoader.newInstance(new URL[]{jar.toURI().toURL()}, getClass().getClassLoader());
-
-                    Class<?> clazz = l.loadClass(mainClass);
-                    quantumExtensionsClass.add(clazz);
+                    loadClass(jar, mainClass);
 
                 } catch (IOException e) {
-                    messageLogger.error("Error while loading module file " + jar.getName());
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    messageLogger.error("Class not found! Wrong main defined in extension.yml?: " + jar.getName() + " class: " + mainClass);
-                    e.printStackTrace();
+                    LOGGER.error("Error while loading module file {} error: {}", jar.getName(), e);
                 }
 
 
@@ -72,11 +68,18 @@ public class QuantumExtensionLoader {
         }
     }
 
-    @FunctionalInterface
-    public static interface CallBack{
-        void call();
+    private void loadClass(File jar, String mainClass) {
+        try (URLClassLoader l = URLClassLoader.newInstance(new URL[]{jar.toURI().toURL()}, getClass().getClassLoader())) {
+            Class<?> clazz = l.loadClass(mainClass);
+            quantumExtensionsClass.add(clazz);
+        } catch (ClassNotFoundException e) {
+            LOGGER.error("Class not found! Wrong main defined in extension.yml?: {} class: {} error: {}", jar.getName(), mainClass, e);
+        } catch (MalformedURLException e) {
+            LOGGER.error("Fully qualified classname invalid classname: {} error: {}", mainClass, e);
+        } catch (IOException e) {
+            LOGGER.error("Jar not readable or not a jar: {} error: {}", jar.getName(), e);
+        }
     }
-
 
 
     public void enable(CallBack onFinish) {
@@ -94,7 +97,7 @@ public class QuantumExtensionLoader {
 
                 }
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                e.printStackTrace();
+                LOGGER.error("Instantiation of QuantumExtension failed!", e);
             }
         }
 
@@ -104,8 +107,13 @@ public class QuantumExtensionLoader {
     public void disable() {
         for (QuantumExtension extension : quantumExtensions) {
             extension.onDisable();
-            messageLogger.log(Level.INFO, extension.getExtensionName() + " disabled!");
+            LOGGER.info("{} disabled", extension.getExtensionName());
         }
+    }
+
+    @FunctionalInterface
+    public interface CallBack {
+        void call();
     }
 
 

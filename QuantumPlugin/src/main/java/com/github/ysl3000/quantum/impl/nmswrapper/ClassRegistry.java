@@ -1,6 +1,8 @@
 package com.github.ysl3000.quantum.impl.nmswrapper;
 
 import org.bukkit.Bukkit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -9,6 +11,8 @@ import java.lang.reflect.Method;
  * Class will import specific Minecraft-Version dependent things.
  */
 public class ClassRegistry {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClassRegistry.class);
+
     private String apiVersion;
     private Class<?> craftWorldClass;
     private Class<?> nmsWorldClass;
@@ -27,7 +31,7 @@ public class ClassRegistry {
             this.nmsWorldHandle = craftWorldClass.getDeclaredMethod("getHandle");
             this.isClientSide = nmsWorldClass.getDeclaredField("isClientSide");
         } catch (ClassNotFoundException | NoSuchMethodException | NoSuchFieldException e) {
-            e.printStackTrace();
+            LOGGER.error("Class couldn't be found. Perhaps Minecraft changed to much.", e);
         }
     }
 

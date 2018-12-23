@@ -21,14 +21,14 @@ public class QuantumConnectorsAPIImplementation implements IQuantumConnectorsAPI
     private Registry<AbstractReceiver> receiverRegistry;
     private Registry<AbstractCircuit> circuitRegistry;
     private SourceBlockUtil sourceBlockUtil;
-    private IQSWorld IQSWorld;
+    private IQSWorld iqsWorld;
     private VariantWrapper variantWrapper;
 
-    public QuantumConnectorsAPIImplementation(Registry<AbstractReceiver> receiverRegistry, Registry<AbstractCircuit> circuitRegistry, SourceBlockUtil sourceBlockUtil, IQSWorld IQSWorld, VariantWrapper variantWrapper, int maxChainLinks, ICircuitActivator circuitManager) {
+    public QuantumConnectorsAPIImplementation(Registry<AbstractReceiver> receiverRegistry, Registry<AbstractCircuit> circuitRegistry, SourceBlockUtil sourceBlockUtil, IQSWorld iqsWorld, VariantWrapper variantWrapper, int maxChainLinks, ICircuitActivator circuitManager) {
         this.receiverRegistry = receiverRegistry;
         this.circuitRegistry = circuitRegistry;
         this.sourceBlockUtil = sourceBlockUtil;
-        this.IQSWorld = IQSWorld;
+        this.iqsWorld = iqsWorld;
         this.variantWrapper = variantWrapper;
         this.maxChainLinks = maxChainLinks;
         this.circuitManager = circuitManager;
@@ -51,7 +51,7 @@ public class QuantumConnectorsAPIImplementation implements IQuantumConnectorsAPI
 
     @Override
     public void setStatic(World world, boolean isStatic) {
-        IQSWorld.setStatic(world, isStatic);
+        iqsWorld.setStatic(world, isStatic);
     }
 
     @Override

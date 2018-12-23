@@ -6,14 +6,18 @@ import com.github.ysl3000.quantum.api.QuantumExtension;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class Registry<T extends IValidMaterials> implements IRegistry<T> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Registry.class);
 
     private final QuantumMap<T> typeMap = new QuantumMap<>();
 
@@ -42,7 +46,7 @@ public class Registry<T extends IValidMaterials> implements IRegistry<T> {
             }
 
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
+            LOGGER.error("QuantumExtension couldn't be registered.", e);
         }
     }
 
@@ -89,7 +93,7 @@ public class Registry<T extends IValidMaterials> implements IRegistry<T> {
         return clazz.getConstructor(Location.class, Integer.class).newInstance(location, delay);
     }
 
-    public final T getObject(Class<? extends T> clazz) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    private T getObject(Class<? extends T> clazz) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Constructor<? extends T> constructor = clazz.getConstructor();
 
         if (constructor != null) {
@@ -107,6 +111,6 @@ public class Registry<T extends IValidMaterials> implements IRegistry<T> {
         if (typeMap.contains(m)) {
             return typeMap.get(m);
         }
-        return null;
+        return new ArrayList<>();
     }
 }

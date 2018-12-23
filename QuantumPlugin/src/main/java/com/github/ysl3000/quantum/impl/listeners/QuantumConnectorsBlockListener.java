@@ -3,7 +3,6 @@ package com.github.ysl3000.quantum.impl.listeners;
 import com.github.ysl3000.quantum.QuantumConnectors;
 import com.github.ysl3000.quantum.api.receiver.ReceiverState;
 import com.github.ysl3000.quantum.impl.interfaces.ICircuitActivator;
-import com.github.ysl3000.quantum.impl.interfaces.ICircuitManager;
 import com.github.ysl3000.quantum.impl.utils.MessageLogger;
 import com.github.ysl3000.quantum.impl.utils.SourceBlockUtil;
 import org.bukkit.Bukkit;
@@ -18,7 +17,6 @@ import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.inventory.FurnaceBurnEvent;
 
 public class QuantumConnectorsBlockListener implements Listener {
-    public static String string;
     private QuantumConnectors plugin;
     private ICircuitActivator circuitManager;
     private MessageLogger messageLogger;
@@ -53,20 +51,19 @@ public class QuantumConnectorsBlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onFuranceBurn(FurnaceBurnEvent e) {
-        if (circuitManager.circuitExists(e.getBlock().getLocation())) {
-            if (e.isBurning()) {
-                Location lFurnace = e.getBlock().getLocation();
+        if (circuitManager.circuitExists(e.getBlock().getLocation()) && e.isBurning()) {
+            Location lFurnace = e.getBlock().getLocation();
 
-                //SEND ON
-                circuitManager.activateCircuit(lFurnace, ReceiverState.S0.ordinal(), ReceiverState.S1.ordinal());
+            //SEND ON
+            circuitManager.activateCircuit(lFurnace, ReceiverState.S0.ordinal(), ReceiverState.S1.ordinal());
 
-                //Schedule a check to send the corresponding OFF
-                Bukkit.getScheduler().scheduleSyncDelayedTask(
-                        plugin,
-                        new DelayedFurnaceCoolCheck(lFurnace),
-                        e.getBurnTime() + 5
-                );
-            }
+            //Schedule a check to send the corresponding OFF
+            Bukkit.getScheduler().scheduleSyncDelayedTask(
+                    plugin,
+                    new DelayedFurnaceCoolCheck(lFurnace),
+                    e.getBurnTime() + 5L
+            );
+
         }
     }
 
@@ -83,11 +80,9 @@ public class QuantumConnectorsBlockListener implements Listener {
 
             // If it's a BURNING_FURNACE it's still on and the next 
             // FurnaceBurnEvent is responsible for dispatching a delayed task
-            if (bFurnace.getType() == Material.FURNACE) {
-                //Send OFF
-                if (circuitManager.circuitExists(lFurnace)) {
-                    circuitManager.activateCircuit(lFurnace, ReceiverState.S1.ordinal(), ReceiverState.S0.ordinal());
-                }
+            if (bFurnace.getType() == Material.FURNACE && circuitManager.circuitExists(lFurnace)) {
+                circuitManager.activateCircuit(lFurnace, ReceiverState.S1.ordinal(), ReceiverState.S0.ordinal());
+
             }
         }
     }

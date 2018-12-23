@@ -23,12 +23,17 @@ import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerBedLeaveEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class QuantumConnectorsPlayerListener implements Listener {
+    private static final Logger LOGGER = LoggerFactory.getLogger(QuantumConnectorsPlayerListener.class);
+
     private final QuantumConnectors plugin;
 
     private ICircuitActivator circuitManager;
@@ -49,12 +54,14 @@ public class QuantumConnectorsPlayerListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        if (player.hasPermission("QuantumConnectors.update") || player.isOp()) {
-            if (plugin.isUpdateAvailable()) {
-                player.sendMessage(ChatColor.RED + "[QC] An update is available: " + ChatColor.WHITE + plugin.getUpdateName());
-            }
+        if ((player.hasPermission("QuantumConnectors.update") || player.isOp()) && plugin.isUpdateAvailable()) {
+            player.sendMessage(
+                    ChatColor.RED + "[QC] An update is available: " + ChatColor.WHITE + plugin
+                            .getUpdateName());
+
         }
     }
+
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
@@ -81,7 +88,8 @@ public class QuantumConnectorsPlayerListener implements Listener {
                 if (circuitManager.isValidSender(block)) {
                     //There is already a circuit there
                     if (circuitManager.circuitExists(location)) {
-                        messageLogger.msg(player, ChatColor.YELLOW + "A circuit already sends from this location!");
+                        messageLogger.msg(player,
+                                ChatColor.YELLOW + "A circuit already sends from this location!");
                         messageLogger.msg(player, "Break the block to remove it.");
 
                     }
@@ -94,7 +102,9 @@ public class QuantumConnectorsPlayerListener implements Listener {
                 //Invalid sender
                 else {
                     messageLogger.msg(player, ChatColor.RED + "Invalid sender!");
-                    messageLogger.msg(player, ChatColor.YELLOW + "Senders: " + ChatColor.WHITE + circuitManager.getValidSendersMaterialsAsString());
+                    messageLogger.msg(player,
+                            ChatColor.YELLOW + "Senders: " + ChatColor.WHITE + circuitManager
+                                    .getValidSendersMaterialsAsString());
 
                 }
             }
@@ -102,74 +112,74 @@ public class QuantumConnectorsPlayerListener implements Listener {
             else {
                 //Player clicked the sender block again
                 if (pc.getLocation().toString().equals(location.toString())) {
-                    messageLogger.msg(player, ChatColor.YELLOW + "A block cannot be the sender AND the receiver!");
+                    messageLogger.msg(player,
+                            ChatColor.YELLOW + "A block cannot be the sender AND the receiver!");
 
                 }
                 //Player clicked a valid receiver block
                 else if (circuitManager.isValidReceiver(block)) {
-
 
                     if (pc.isReceiver(location)) {
                         // Player is sneaking, receiver will be removed.
                         if (player.isSneaking()) {
                             messageLogger.msg(player, messageLogger.getMessage("receiver_deleted"));
                             pc.delReceiver(location);
-                        } else
-                            messageLogger.msg(player, messageLogger.getMessage("receiver_already_added"));
+                        } else {
+                            messageLogger
+                                    .msg(player, messageLogger.getMessage("receiver_already_added"));
+                        }
                         return;
                     }
-
 
                     //Only allow circuits in the same world, sorry multiworld QCircuits :(
                     if (pc.getLocation().getWorld().equals(location.getWorld())) {
                         //Isn't going over max receivers
-                        if (QuantumConnectors.MAX_RECEIVERS_PER_CIRCUIT == 0 // 0 == unlimited
-                                || pc.getReceiversCount() < QuantumConnectors.MAX_RECEIVERS_PER_CIRCUIT
+                        if (plugin.getMaxReceiversPerCircuit() == 0 // 0 == unlimited
+                                || pc.getReceiversCount() < plugin.getMaxReceiversPerCircuit()
                                 || player.hasPermission("QuantumConnectors.ignoreLimits")) {
 
                             if (this.receiverRegistry.isValid(block)) {
 
-                                List<Class<? extends AbstractReceiver>> possibleReceivers = this.receiverRegistry.fromType(location);
+                                List<Class<? extends AbstractReceiver>> possibleReceivers = this.receiverRegistry
+                                        .fromType(location);
 
-
-                                // TODO: 20.01.2017 create inventory with possible Receivers
-                                // TODO: 20.01.2017 move to inventory listener ->
-                                //Add the receiver to our new/found circuit
-                                // temp solution
-                                if (possibleReceivers.size() > 0) {
+                                if (!possibleReceivers.isEmpty()) {
                                     try {
-                                        pc.addReceiver(possibleReceivers.get(0), location, pc.getDelay());
+                                        pc.addReceiver(possibleReceivers.get(0), location,
+                                                pc.getDelay());
                                     } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
-                                        e.printStackTrace();
+                                        LOGGER.error("Receiver couldn't be added.", e);
                                     } finally {
-                                        messageLogger.msg(player, "Added a receiver! (#" + pc.getReceiversCount() + ")" + ChatColor.YELLOW + " ('/qc done', or add more)");
+                                        messageLogger.msg(player,
+                                                "Added a receiver! (#" + pc.getReceiversCount() + ")"
+                                                        + ChatColor.YELLOW + " ('/qc done', or add more)");
                                     }
                                 }
-
-                                // TODO: 20.01.2017 until here
-
-                                // TODO: 20.01.2017 idea of pregenerating inventory for each MaterialType registered
-
-
                             }
                         }
                         //Went over max circuits
                         else {
-                            messageLogger.msg(player, "You cannot add anymore receivers! (" + pc.getReceiversCount() + ")");
-                            messageLogger.msg(player, "'/qc done' to finish circuit, or '/qc cancel' to void it");
+                            messageLogger.msg(player,
+                                    "You cannot add anymore receivers! (" + pc.getReceiversCount() + ")");
+                            messageLogger.msg(player,
+                                    "'/qc done' to finish circuit, or '/qc cancel' to void it");
 
                         }
                     }
                     //Receiver was in a different world
                     else {
-                        messageLogger.msg(player, ChatColor.RED + "Receivers must be in the same world as their sender! Sorry :|");
+                        messageLogger.msg(player, ChatColor.RED
+                                + "Receivers must be in the same world as their sender! Sorry :|");
                     }
                 }
                 //Player clicked an invalid receiver block
                 else {
                     messageLogger.msg(player, ChatColor.RED + "Invalid receiver!");
-                    messageLogger.msg(player, ChatColor.YELLOW + "Receivers: " + ChatColor.WHITE + circuitManager.getValidReceiversMaterialsAsString());
-                    messageLogger.msg(player, "('/qc done' to finish circuit, or '/qc cancel' to void it)");
+                    messageLogger.msg(player,
+                            ChatColor.YELLOW + "Receivers: " + ChatColor.WHITE + circuitManager
+                                    .getValidReceiversMaterialsAsString());
+                    messageLogger
+                            .msg(player, "('/qc done' to finish circuit, or '/qc cancel' to void it)");
 
                 }
             }
@@ -191,42 +201,44 @@ public class QuantumConnectorsPlayerListener implements Listener {
                     AbstractKeepAliveReceiver.keepAlives.add(block);
                 }
 
-                circuitManager.activateCircuit(location, state.getOpposite().ordinal(), state.ordinal());
+                circuitManager
+                        .activateCircuit(location, state.getOpposite().ordinal(), state.ordinal());
                 return;
             }
 
-
             ReceiverState receiverState = api.getState(block);
 
-            circuitManager.activateCircuit(location, receiverState.ordinal(), receiverState.getOpposite().ordinal());
+            circuitManager.activateCircuit(location, receiverState.ordinal(),
+                    receiverState.getOpposite().ordinal());
 
         }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onInventoryOpen(InventoryOpenEvent e) {
-        InventoryHolder ih = e.getInventory().getHolder();
+        activateFromInventory(e.getInventory(), ReceiverState.S0, ReceiverState.S5);
+    }
 
-        if (ih == null) return;
+    private void activateFromInventory(Inventory inventory, ReceiverState pre, ReceiverState post) {
+        InventoryHolder ih = inventory.getHolder();
+
+        if (ih == null) {
+            return;
+        }
 
         Location location = api.getSourceBlock(ih.getInventory().getLocation());
 
-        if (circuitManager.circuitExists(location))
-            circuitManager.activateCircuit(location, ReceiverState.S0.ordinal(), ReceiverState.S5.ordinal());
+        if (circuitManager.circuitExists(location)) {
+            circuitManager
+                    .activateCircuit(location, pre.ordinal(), post.ordinal());
+        }
     }
 
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onInventoryClose(InventoryCloseEvent e) {
 
-        InventoryHolder ih = e.getInventory().getHolder();
-
-        if (ih == null) return;
-
-        Location location = api.getSourceBlock(ih.getInventory().getLocation());
-
-        if (circuitManager.circuitExists(location))
-            circuitManager.activateCircuit(location, ReceiverState.S0.ordinal(), ReceiverState.S5.ordinal());
+        activateFromInventory(e.getInventory(), ReceiverState.S5, ReceiverState.S0);
 
     }
 
@@ -235,7 +247,8 @@ public class QuantumConnectorsPlayerListener implements Listener {
         Location location = api.getSourceBlock(e.getBed().getLocation());
         if (circuitManager.circuitExists(location)) {
             // send on
-            circuitManager.activateCircuit(location, ReceiverState.S0.ordinal(), ReceiverState.S5.ordinal());
+            circuitManager
+                    .activateCircuit(location, ReceiverState.S0.ordinal(), ReceiverState.S5.ordinal());
         }
     }
 
@@ -245,7 +258,8 @@ public class QuantumConnectorsPlayerListener implements Listener {
         Location location = api.getSourceBlock(e.getBed().getLocation());
         if (circuitManager.circuitExists(location)) {
             // send off
-            circuitManager.activateCircuit(location, ReceiverState.S5.ordinal(), ReceiverState.S0.ordinal());
+            circuitManager
+                    .activateCircuit(location, ReceiverState.S5.ordinal(), ReceiverState.S0.ordinal());
         }
     }
 }

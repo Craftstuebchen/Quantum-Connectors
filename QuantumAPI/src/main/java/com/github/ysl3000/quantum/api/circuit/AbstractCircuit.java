@@ -1,5 +1,24 @@
 package com.github.ysl3000.quantum.api.circuit;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.AnaloguePowerable;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Openable;
+import org.bukkit.material.Redstone;
+
 import com.github.ysl3000.quantum.api.IQuantumConnectorsAPI;
 import com.github.ysl3000.quantum.api.IRegistry;
 import com.github.ysl3000.quantum.api.QuantumConnectorsAPI;
@@ -7,21 +26,6 @@ import com.github.ysl3000.quantum.api.ValidCircuitMaterials;
 import com.github.ysl3000.quantum.api.receiver.AbstractReceiver;
 import com.github.ysl3000.quantum.api.receiver.CompatReceiver;
 import com.github.ysl3000.quantum.api.receiver.Receiver;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Tag;
-import org.bukkit.block.Block;
-import org.bukkit.block.data.AnaloguePowerable;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.Openable;
-import org.bukkit.material.Redstone;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by Yannick on 23.01.2017.
@@ -269,10 +273,5 @@ public abstract class AbstractCircuit implements Circuit {
     public Collection<Material> getValidMaterials() {
         return ValidCircuitMaterials.VALID_MATERIALS;
     }
-
-
-
-
-
 }
 

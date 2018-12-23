@@ -1,18 +1,13 @@
 package com.github.ysl3000.quantum.impl.receiver.base;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.bukkit.Material;
+
+import java.util.*;
 
 public class QuantumMap<T> {
 
     private final Map<String, Class<? extends T>> stringMap = new HashMap<>();
-    private final Map<Material, List<Class<? extends T>>> materialMap = new HashMap<>();
+    private final Map<Material, List<Class<? extends T>>> materialMap = new EnumMap<>(Material.class);
     private final Map<Class<? extends T>, String> classMap = new HashMap<>();
 
 

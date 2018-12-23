@@ -137,13 +137,9 @@ public class DelayedCircuit implements Circuit {
 
     @Override
     public void actvate(int oldCurrent, int newCurrent, int chain) {
-        Bukkit.getScheduler().runTaskLater(this.javaPlugin, new Runnable() {
-            @Override
-            public void run() {
-                circuit.actvate(oldCurrent, newCurrent, chain);
-
-            }
-        }, circuit.getDelay() * 20);
+        Bukkit.getScheduler().runTaskLater(this.javaPlugin,
+                () -> circuit.actvate(oldCurrent, newCurrent, chain)
+                , circuit.getDelay() * 20L);
     }
 
     @Override

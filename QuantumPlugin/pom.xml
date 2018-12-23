@@ -25,6 +25,22 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.11.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.11.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.11.1</version>
+        </dependency>
+
     </dependencies>
 
 
@@ -53,8 +69,44 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.5.0.1254</version>
+            </plugin>
+
         </plugins>
 
     </build>
 
+    <!--
+    mvn sonar:sonar \
+  -Dsonar.projectKey=Craftstuebchen_Quantum-Connectors \
+  -Dsonar.organization=craftstuebchen \
+  -Dsonar.host.url=https://sonarcloud.io \
+  -Dsonar.login=f860be321cd4f2188a31784f6d312158adc8de02
+    -->
+    <profiles>
+        <profile>
+            <id>sonar</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <!-- Optional URL to server. Default value is http://localhost:9000 -->
+                <sonar.host.url>
+                    https://sonarcloud.io
+                </sonar.host.url>
+                <sonar.projectKey>
+                    Craftstuebchen_Quantum-Connectors
+                </sonar.projectKey>
+                <sonar.organization>
+                    craftstuebchen
+                </sonar.organization>
+                <sonar.login>
+                    f860be321cd4f2188a31784f6d312158adc8de02
+                </sonar.login>
+            </properties>
+        </profile>
+    </profiles>
 </project>

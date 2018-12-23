@@ -14,7 +14,6 @@ import com.github.ysl3000.quantum.impl.listeners.QuantumConnectorsBlockListener;
 import com.github.ysl3000.quantum.impl.listeners.QuantumConnectorsPlayerListener;
 import com.github.ysl3000.quantum.impl.listeners.QuantumConnectorsWorldListener;
 import com.github.ysl3000.quantum.impl.nmswrapper.ClassRegistry;
-import com.github.ysl3000.quantum.impl.nmswrapper.IQSWorld;
 import com.github.ysl3000.quantum.impl.nmswrapper.QSWorld;
 import com.github.ysl3000.quantum.impl.receiver.base.Registry;
 import com.github.ysl3000.quantum.impl.utils.MessageLogger;
@@ -24,6 +23,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,44 +36,29 @@ import java.util.Set;
 
 public class QuantumConnectors extends JavaPlugin {
 
-    public static int MAX_DELAY_TIME = 10;//in seconds
-    public static int MAX_RECEIVERS_PER_CIRCUIT = 20;
-    public static boolean VERBOSE_LOGGING = false;
-    private static int AUTOSAVE_INTERVAL = 30;//specified here in minutes
-    private static int AUTO_SAVE_ID = -1;
-    public String apiVersion;
+    private static final Logger LOGGER = LoggerFactory.getLogger(QuantumConnectors.class);
+
+    private int maxDelayTime = 10;//in seconds
+    private int maxReceiversPerCircuit = 20;
+    private boolean verboseLogging = false;
+    private int autosaveInterval = 30;//specified here in minutes
+    private int autosaveId = -1;
+    private String apiVersion;
     // Configurables
-    private int MAX_CHAIN_LINKS = 3;
-    private Registry<AbstractReceiver> receiverRegistry;
-    private Registry<AbstractCircuit> circuitRegistry;
+    private int maxChainLinks = 3;
     private QuantumConnectorsAPIImplementation api;
     private Map<String, String> messages;
-    private QuantumConnectorsWorldListener worldListener;
     private ICircuitActivator circuitManager;
-    private QuantumConnectorsPlayerListener playerListener;
-    private QuantumConnectorsBlockListener blockListener;
-    private MessageLogger messageLogger;
-    private boolean UPDATE_NOTIFICATIONS = false;
-    private boolean updateAvailable = false;
+    private boolean updateNotifications = false;
     private String updateName;
-    private Runnable autosaveCircuits = new Runnable() {
-        @Override
-        public void run() {
-            circuitLoader.saveAllWorlds();
-        }
-    };
 
-    private File extensionDir;
     private QuantumExtensionLoader loader;
-    private SourceBlockUtil sourceBlockUtil;
-    private ClassRegistry classRegistry;
-    private IQSWorld IQSWorld;
-    private VariantWrapper variantWrapper;
     private CircuitLoader circuitLoader;
-    private CircuitContainer circuitContainer;
 
     @Override
     public void onDisable() {
+        getServer().getScheduler().cancelTask(autosaveId);
+
         if (circuitManager != null) {
             circuitLoader.saveAllWorlds();
         }
@@ -91,39 +77,39 @@ public class QuantumConnectors extends JavaPlugin {
         //Load config options, localized messages
         setupConfig();
 
-        this.messageLogger = new MessageLogger(this.getLogger(), messages);
+        MessageLogger messageLogger = new MessageLogger(this.getLogger(), messages);
 
-        this.receiverRegistry = new Registry<>();
-        this.circuitRegistry = new Registry<>();
+        Registry<AbstractReceiver> receiverRegistry = new Registry<>();
+        Registry<AbstractCircuit> circuitRegistry = new Registry<>();
 
-        this.circuitContainer = new CircuitContainer();
+        CircuitContainer circuitContainer = new CircuitContainer();
 
-        this.circuitLoader = new CircuitLoader(this, messageLogger, this.circuitRegistry, circuitContainer);
+        this.circuitLoader = new CircuitLoader(this, messageLogger, circuitRegistry, circuitContainer);
 
-        this.circuitManager = new CircuitManager(messageLogger, this, this.circuitRegistry, this.receiverRegistry, circuitContainer);
+        this.circuitManager = new CircuitManager(this, circuitRegistry, receiverRegistry, circuitContainer);
 
-        this.sourceBlockUtil = new SourceBlockUtil();
-        this.classRegistry = new ClassRegistry();
-        this.apiVersion = this.classRegistry.getApiVersion();
-        this.IQSWorld = new QSWorld(this.classRegistry);
-        this.variantWrapper = new VariantWrapper();
-        this.api = new QuantumConnectorsAPIImplementation(this.receiverRegistry, this.circuitRegistry, this.sourceBlockUtil, this.IQSWorld, this.variantWrapper, MAX_CHAIN_LINKS, this.circuitManager);
+        SourceBlockUtil sourceBlockUtil = new SourceBlockUtil();
+        ClassRegistry classRegistry = new ClassRegistry();
+        this.apiVersion = classRegistry.getApiVersion();
+        com.github.ysl3000.quantum.impl.nmswrapper.IQSWorld qsWorld = new QSWorld(classRegistry);
+        VariantWrapper variantWrapper = new VariantWrapper();
+        this.api = new QuantumConnectorsAPIImplementation(receiverRegistry, circuitRegistry, sourceBlockUtil, qsWorld, variantWrapper, maxChainLinks, this.circuitManager);
 
         QuantumConnectorsAPI.setApi(this.api);
 
-        this.extensionDir = new File(getDataFolder().getPath(), "extensions");
+        File extensionDir = new File(getDataFolder().getPath(), "extensions");
 
-        this.extensionDir.mkdirs();
+        extensionDir.mkdirs();
 
-        this.loader = new QuantumExtensionLoader(api, messageLogger, this.extensionDir);
+        this.loader = new QuantumExtensionLoader(api, messageLogger, extensionDir);
 
         this.loader.load();
-        this.loader.enable(() -> circuitLoader.loadWorlds());
+        this.loader.enable(circuitLoader::loadWorlds);
 
 
-        this.worldListener = new QuantumConnectorsWorldListener(this.circuitLoader);
-        this.blockListener = new QuantumConnectorsBlockListener(this, circuitManager, messageLogger, sourceBlockUtil);
-        this.playerListener = new QuantumConnectorsPlayerListener(this, circuitManager, messageLogger, api, receiverRegistry);
+        QuantumConnectorsWorldListener worldListener = new QuantumConnectorsWorldListener(this.circuitLoader);
+        QuantumConnectorsBlockListener blockListener = new QuantumConnectorsBlockListener(this, circuitManager, messageLogger, sourceBlockUtil);
+        QuantumConnectorsPlayerListener playerListener = new QuantumConnectorsPlayerListener(this, circuitManager, messageLogger, api, receiverRegistry);
 
         getCommand("qc").setExecutor(new QuantumConnectorsCommandExecutor(this, circuitManager, messageLogger));
 
@@ -134,14 +120,13 @@ public class QuantumConnectors extends JavaPlugin {
         pm.registerEvents(blockListener, this);
         pm.registerEvents(worldListener, this);
 
+        autosaveInterval *= 60 * 20;//convert to ~minutes
 
-        AUTOSAVE_INTERVAL = AUTOSAVE_INTERVAL * 60 * 20;//convert to ~minutes
-
-        AUTO_SAVE_ID = getServer().getScheduler().scheduleSyncRepeatingTask(
+        autosaveId = getServer().getScheduler().scheduleSyncRepeatingTask(
                 this,
-                autosaveCircuits,
-                AUTOSAVE_INTERVAL,
-                AUTOSAVE_INTERVAL);
+                circuitLoader::saveAllWorlds,
+                autosaveInterval,
+                autosaveInterval);
 
     }
 
@@ -151,12 +136,12 @@ public class QuantumConnectors extends JavaPlugin {
         FileConfiguration config = this.getConfig();
         config.options().copyDefaults(true);
         this.saveConfig();
-        VERBOSE_LOGGING = config.getBoolean("verbose_logging", VERBOSE_LOGGING);
-        MAX_CHAIN_LINKS = config.getInt("max_chain_links", MAX_CHAIN_LINKS);
-        MAX_DELAY_TIME = config.getInt("max_delay_time", MAX_DELAY_TIME);
-        MAX_RECEIVERS_PER_CIRCUIT = config.getInt("max_receivers_per_circuit", MAX_RECEIVERS_PER_CIRCUIT);
-        AUTOSAVE_INTERVAL = config.getInt("autosave_interval_minutes", AUTOSAVE_INTERVAL);
-        UPDATE_NOTIFICATIONS = config.getBoolean("update_notifications", UPDATE_NOTIFICATIONS);
+        verboseLogging = config.getBoolean("verbose_logging", verboseLogging);
+        maxChainLinks = config.getInt("max_chain_links", maxChainLinks);
+        maxDelayTime = config.getInt("max_delay_time", maxDelayTime);
+        maxReceiversPerCircuit = config.getInt("max_receivers_per_circuit", maxReceiversPerCircuit);
+        autosaveInterval = config.getInt("autosave_interval_minutes", autosaveInterval);
+        updateNotifications = config.getBoolean("update_notifications", updateNotifications);
         this.saveConfig();
 
         File messagesFile = new File(this.getDataFolder(), "messages.yml");
@@ -177,27 +162,44 @@ public class QuantumConnectors extends JavaPlugin {
     }
 
     private void copy(InputStream in, File file) {
-        try {
-            OutputStream out = new FileOutputStream(file);
+        try (OutputStream out = new FileOutputStream(file)) {
             byte[] buf = new byte[1024];
             int len;
             while ((len = in.read(buf)) > 0) {
                 out.write(buf, 0, len);
             }
-            out.close();
             in.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Copy of resource failed!", e);
         }
     }
 
 
     public boolean isUpdateAvailable() {
-        return this.updateAvailable;
+        return false;
     }
 
     public String getUpdateName() {
         return updateName;
     }
 
+    public String getApiVersion() {
+        return apiVersion;
+    }
+
+    public int getMaxDelayTime() {
+        return maxDelayTime;
+    }
+
+    public int getMaxReceiversPerCircuit() {
+        return maxReceiversPerCircuit;
+    }
+
+    public boolean isVerboseLogging() {
+        return verboseLogging;
+    }
+
+    public int getAutosaveInterval() {
+        return autosaveInterval;
+    }
 }
